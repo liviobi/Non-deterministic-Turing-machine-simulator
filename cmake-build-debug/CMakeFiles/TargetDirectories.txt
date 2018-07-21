@@ -1,0 +1,3 @@
+/home/livio/CLionProjects/FSM/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/livio/CLionProjects/FSM/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/livio/CLionProjects/FSM/cmake-build-debug/CMakeFiles/FSM.dir
