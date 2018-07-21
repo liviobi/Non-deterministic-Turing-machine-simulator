@@ -1,6 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-    printf("Hello, World!\n");
+    int a;
+    int b;
+    scanf("%d", &a);
+    scanf("%d", &b);
+    int c = a + b;
+    printf("%d",c);
     return 0;
 }
