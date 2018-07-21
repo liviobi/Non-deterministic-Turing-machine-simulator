@@ -9,4 +9,6 @@
 /home/livio/CLionProjects/FSM/main.c
 stdio.h
 -
+stdlib.h
+-
 
