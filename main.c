@@ -14,7 +14,6 @@ int main() {
     //scan tr
     scanf("%s", command);
     printf("%s\n", command);
-    
     while(scanf("%d %c %c %c %d",&state,&red,&written,&headShift,&nextState) == 5){
         printf("%d %c %c %c %d\n",state,red,written,headShift,nextState);
         //todo setup the fsm
@@ -23,7 +22,6 @@ int main() {
     //scan acc
     scanf("%s",command);
     printf("%s\n", command);
-
     int acceptedState;
     while(scanf("%d", &acceptedState) == 1){
         printf("%d\n",acceptedState);
@@ -32,10 +30,9 @@ int main() {
     //scan max
     scanf("%s",command);
     printf("%s\n", command);
-
-    int maxIterations; //todo see for long or double, make static
-    scanf("%d",&maxIterations);
-    printf("%d\n",maxIterations);
+    int maxTransitions; //todo see for long or double, make static
+    scanf("%d",&maxTransitions);
+    printf("%d\n",maxTransitions);
 
     //scan r
     scanf("%s",command);
