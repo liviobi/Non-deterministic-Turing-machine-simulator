@@ -28,6 +28,8 @@ void setAcceptedStates();
 
 void setupStates();
 
+void printFsm();
+
 //todo check for empty inputs
 int main() {
     char strings[100];
@@ -43,10 +45,17 @@ int main() {
         printf("%s\n",strings);
     }
 
-    //prova
-    for(int i =0; i<STARTINLEN; i++){
+    printFsm();
+
+}
+
+void printFsm() {
+    for(int i =0; i < STARTINLEN; i++){
         if (states[i] != NULL){
-            printf("%d\n",i);
+            printf("\n%d ",i);
+            if(states[i]->acceptState){
+                printf("accept \n");
+            }
             for(int transitionCharIndex = 0; transitionCharIndex<CHARACTERS;transitionCharIndex++){
                 transition *transitionToPrint = states[i]->transitions[transitionCharIndex];
                 while (transitionToPrint != NULL){
@@ -60,7 +69,6 @@ int main() {
             }
         }
     }
-
 }
 
 void setupStates() {
@@ -94,17 +102,9 @@ void setupStates() {
             newTransition->headShift = headShift;
             newTransition->nextTransition = states[currentState]->transitions[red-95];
             states[currentState]->transitions[red-95] = newTransition;
+            }
 
-
-        }
-
-        //todo setup the fsm
     }
-    for(int i = 0; i<STARTINLEN;i++){
-        if (states[i]==NULL){
-        }
-    }
-state states[STARTINLEN] = {NULL};
 }
 
 void setAcceptedStates() {//scan acc
@@ -114,6 +114,13 @@ void setAcceptedStates() {//scan acc
     int acceptedState;
     while(scanf("%d", &acceptedState) == 1){
         printf("%d\n",acceptedState);
+        if (states[acceptedState] != NULL){
+            states[acceptedState]->acceptState = TRUE; //should never be executed
+        }else{
+            state* newState = (state *)malloc(sizeof(state));
+            states[acceptedState] = newState;
+            newState->acceptState = TRUE;
+        }
     }
 }
 
