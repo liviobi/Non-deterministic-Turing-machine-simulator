@@ -3,9 +3,8 @@
 
 #define FALSE 0
 #define TRUE 1
-#define STARTINLEN 50
+#define STARTINGLEN 50
 #define CHARACTERS 27
-#define NEXTSTATE
 
 typedef struct transition_s{
     char written;
@@ -16,11 +15,11 @@ typedef struct transition_s{
 
 typedef struct state_s {
     int acceptState;
-    transition *transitions[CHARACTERS];
+    transition **transitions; //todo can make it
 } state;
 
 int maxTransitions; //todo see for long or double
-state *states[STARTINLEN]; //todo non funziona se gli stati hanno numeri grandi
+state **states; //todo non funziona se gli stati hanno numeri grandi
 
 void setMaxTransitions();
 
@@ -33,6 +32,10 @@ void printFsm();
 //todo check for empty inputs
 int main() {
     char strings[100];
+    states = (state **)malloc(STARTINGLEN*sizeof(state));
+    for (int stateToInit = 0; stateToInit < STARTINGLEN; stateToInit++) {
+        states[stateToInit] = NULL;
+    }
 
     setupStates();
     setAcceptedStates();
@@ -47,25 +50,28 @@ int main() {
 
     printFsm();
 
+
 }
 
 void printFsm() {
-    for(int i =0; i < STARTINLEN; i++){
+    for(int i =0; i < STARTINGLEN; i++){
         if (states[i] != NULL){
             printf("\n%d ",i);
             if(states[i]->acceptState){
-                printf("accept \n");
+                printf("accept");
             }
-            for(int transitionCharIndex = 0; transitionCharIndex<CHARACTERS;transitionCharIndex++){
-                transition *transitionToPrint = states[i]->transitions[transitionCharIndex];
-                while (transitionToPrint != NULL){
-                    char transitionChar = (char)transitionCharIndex + 95;
-                    printf("%c ",transitionChar);
-                    printf("%c %c %d \n",transitionToPrint->written,transitionToPrint->headShift,transitionToPrint->nextState);
-                    transitionToPrint = transitionToPrint->nextTransition;
+            printf("\n");
+            if(states[i]->transitions !=NULL){
+                for(int transitionCharIndex = 0; transitionCharIndex<CHARACTERS;transitionCharIndex++){
+                    transition *transitionToPrint = states[i]->transitions[transitionCharIndex];
+                    while (transitionToPrint != NULL){
+                        char transitionChar = (char)transitionCharIndex + 95;
+                        printf("%c %c %c %d \n",transitionChar,transitionToPrint->written,transitionToPrint->headShift,transitionToPrint->nextState);
+                        transitionToPrint = transitionToPrint->nextTransition;
+
+                    }
 
                 }
-
             }
         }
     }
@@ -86,14 +92,18 @@ void setupStates() {
         printf("%d %c %c %c %d\n",currentState,red,written,headShift,nextState);
         if(states[currentState]== NULL){
             state* newState = (state *)malloc(sizeof(state));
-            states[currentState] = newState;
             newState->acceptState = FALSE;
+            newState->transitions = (transition**)malloc(CHARACTERS*sizeof(transition*));
+            for(int i = 0;i<CHARACTERS;i++){
+                newState->transitions[i] = NULL;
+            }
             transition* newTransition = (transition *)malloc(sizeof(transition));
             newTransition->nextState = nextState;
             newTransition->written = written;
             newTransition->headShift = headShift;
             newTransition->nextTransition = NULL;
             newState->transitions[red-95] = newTransition;
+            states[currentState] = newState;
 
         }else{
             transition* newTransition = (transition *)malloc(sizeof(transition));
@@ -120,6 +130,7 @@ void setAcceptedStates() {//scan acc
             state* newState = (state *)malloc(sizeof(state));
             states[acceptedState] = newState;
             newState->acceptState = TRUE;
+            newState->transitions = NULL;
         }
     }
 }
