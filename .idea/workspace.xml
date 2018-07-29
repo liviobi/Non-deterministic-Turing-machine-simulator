@@ -29,8 +29,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="194">
-              <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
+            <state relative-caret-position="226">
+              <caret line="61" column="54" selection-start-line="61" selection-start-column="54" selection-end-line="61" selection-end-column="54" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -137,7 +137,7 @@
       <updated>1532211505231</updated>
       <workItem from="1532211506780" duration="2846000" />
       <workItem from="1532423732845" duration="13161000" />
-      <workItem from="1532592117101" duration="26088000" />
+      <workItem from="1532592117101" duration="27224000" />
     </task>
     <task id="LOCAL-00001" summary="test">
       <created>1532213273713</created>
@@ -174,11 +174,18 @@
       <option name="project" value="LOCAL" />
       <updated>1532850646803</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="changed memory allocation">
+      <created>1532858923888</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1532858923888</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="42695000" />
+    <option name="totallyTimeSpent" value="43831000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
@@ -216,7 +223,8 @@
     <MESSAGE value="can read the whole file 2" />
     <MESSAGE value="corrlctly setting up the nodes except final states" />
     <MESSAGE value="set accepted states" />
-    <option name="LAST_COMMIT_MESSAGE" value="set accepted states" />
+    <MESSAGE value="changed memory allocation" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed memory allocation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -271,8 +279,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
+        <state relative-caret-position="226">
+          <caret line="61" column="54" selection-start-line="61" selection-start-column="54" selection-end-line="61" selection-end-column="54" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

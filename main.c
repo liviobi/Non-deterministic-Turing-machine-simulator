@@ -29,6 +29,11 @@ void setupStates();
 
 void printFsm();
 
+void freeTransition(transition*transitionToFree);
+
+
+void freeStatesBlocks();
+
 //todo check for empty inputs
 int main() {
     char strings[100];
@@ -50,6 +55,34 @@ int main() {
 
     printFsm();
 
+    freeStatesBlocks();
+
+
+}
+
+void freeStatesBlocks() {
+    for(int stateIndex = 0; stateIndex < STARTINGLEN; stateIndex++){
+        if(states[stateIndex]!= NULL){
+            if(states[stateIndex]->transitions != NULL){
+                for(int transitionCharacterIndex = 0; transitionCharacterIndex < CHARACTERS;transitionCharacterIndex++){
+                   freeTransition(states[stateIndex]->transitions[transitionCharacterIndex]);
+                }
+                free(states[stateIndex]->transitions);
+            }
+            free(states[stateIndex]);
+
+        }
+    }
+    free(states);
+}
+
+void freeTransition(transition*transitionToFree){
+    if(transitionToFree == NULL) {
+        return;
+    }else{
+        freeTransition(transitionToFree->nextTransition);
+        free(transitionToFree);
+    }
 
 }
 
