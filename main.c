@@ -72,6 +72,10 @@ void freeFirstExecution();
 
 void printResult();
 
+transition *createNewTransition(char written, char headShift, int nextState);
+
+state *createNewState(int stateToCreate);
+
 //todo check for empty inputs
 int main() {
     setupStates();
@@ -83,15 +87,15 @@ int main() {
     scanf("%s",command);
     printf("%s\n", command);
 
-    executions = createFirstExecution();
-    while(executions != NULL){
-        char redChar = readFromTape(executions);
-        executeAllTransition(redChar);
-        printf("ended trasition for %c\n\n",redChar);
-        freeFirstExecution();
-    }
-    printResult();
-    result = -1;
+        executions = createFirstExecution();
+        while (executions != NULL) {
+            char redChar = readFromTape(executions);
+            executeAllTransition(redChar);
+            printf("ended trasition for %c\n\n", redChar);
+            freeFirstExecution();
+        }
+        printResult();
+        result = -1;
 
     //printFsm();
 
@@ -113,21 +117,21 @@ void printResult() {
 void executeAllTransition(char red) {
     transition* transitionForRedChar = states[executions->state]->transitions[(int)red - 95];
     while(transitionForRedChar != NULL){
-                execution*clonedExecution = cloneExecution(executions);
-                executions->nextExecution = clonedExecution;
-                printf("char red %c starting from state %d iteration %d cursor %d\n",red,clonedExecution->state,clonedExecution->iteration,clonedExecution->cursor);
-                int transitionResult = makeTransition(clonedExecution,transitionForRedChar);
-                if(transitionResult == 0){
-                    result = 0;
-                    executions->nextExecution = clonedExecution->nextExecution;
-                    freeExecution(clonedExecution);
-                }else if(transitionResult == 1){
-                    result = 1;
-                    freeAllExecutions();
-                    return;
-                }
-                transitionForRedChar = transitionForRedChar->nextTransition;
-            }
+        execution*clonedExecution = cloneExecution(executions);
+        executions->nextExecution = clonedExecution;
+        printf("char red %c starting from state %d iteration %d cursor %d\n",red,clonedExecution->state,clonedExecution->iteration,clonedExecution->cursor);
+        int transitionResult = makeTransition(clonedExecution,transitionForRedChar);
+        if(transitionResult == 0){
+            result = 0;
+            executions->nextExecution = clonedExecution->nextExecution;
+            freeExecution(clonedExecution);
+        }else if(transitionResult == 1){
+            result = 1;
+            freeAllExecutions();
+            return;
+        }
+        transitionForRedChar = transitionForRedChar->nextTransition;
+    }
 }
 
 void freeAllExecutions() {
@@ -176,11 +180,11 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     if(executionToUpdate->cursor>=0){
         executionToUpdate->inputString[executionToUpdate->cursor] = transitionToApply->written;
         if(transitionToApply->headShift =='L'){
-            printf("state %d iteration %d cursor %d written %c moving L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             executionToUpdate->cursor--;
+            printf("state %d iteration %d cursor %d written %c moving L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }else if(transitionToApply->headShift == 'R'){
-            printf("state %d iteration %d cursor %d written %c moving R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             executionToUpdate->cursor++;
+            printf("state %d iteration %d cursor %d written %c moving R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             if(executionToUpdate->cursor==executionToUpdate->inputStringLen){
                 reallocInputString(executionToUpdate);
             }
@@ -190,15 +194,14 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     }else{
         executionToUpdate->leftBlanks[executionToUpdate->cursor*(-1)] = transitionToApply->written;
         if(transitionToApply->headShift =='L'){
-            printf("state %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
-
             executionToUpdate->cursor--;
+            printf("state %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             if(executionToUpdate->cursor*(-1) == executionToUpdate->leftBlanksLen){
                 reallocLeftBlanks(executionToUpdate);
             }
         }else if(transitionToApply->headShift == 'R'){
-            printf("state %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             executionToUpdate->cursor++;
+            printf("state %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }else{
             printf("state %d iteration %d cursor %d written %c leaving blank\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }
@@ -351,30 +354,38 @@ void setupStates() {
     while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5){
         printf("%d %c %c %c %d\n",currentState,red,written,headShift,nextState);
         if(states[currentState]== NULL){
-            state* newState = (state *)malloc(sizeof(state));
-            newState->acceptState = FALSE;
-            newState->transitions = (transition**)malloc(CHARACTERS*sizeof(transition*));
-            for(int i = 0;i<CHARACTERS;i++){
-                newState->transitions[i] = NULL;
-            }
-            transition* newTransition = (transition *)malloc(sizeof(transition));
-            newTransition->nextState = nextState;
-            newTransition->written = written;
-            newTransition->headShift = headShift;
-            newTransition->nextTransition = NULL;
+            state *newState = createNewState(currentState);
+            transition *newTransition = createNewTransition(written, headShift, nextState);
             newState->transitions[red-95] = newTransition;
-            states[currentState] = newState;
-
         }else{
-            transition* newTransition = (transition *)malloc(sizeof(transition));
-            newTransition->nextState = nextState;
-            newTransition->written = written;
-            newTransition->headShift = headShift;
+            transition* newTransition = createNewTransition(written, headShift, nextState);
             newTransition->nextTransition = states[currentState]->transitions[red-95];
             states[currentState]->transitions[red-95] = newTransition;
             }
-
     }
+}
+
+state *createNewState(int stateToCreate) {
+    state* newState = (state *)malloc(sizeof(state));
+    newState->acceptState = FALSE;
+    newState->transitions = (transition**)malloc(CHARACTERS*sizeof(transition*));
+    for(int i = 0;i<CHARACTERS;i++){
+        newState->transitions[i] = NULL;
+    }
+    states[stateToCreate] = newState;
+    return newState;
+}
+
+transition *createNewTransition(char written, char headShift, int nextState) {
+    transition* newTransition = (transition *)malloc(sizeof(transition));
+    if(states[nextState] == NULL){
+        createNewState(nextState);
+    }
+    newTransition->nextState = nextState;
+    newTransition->written = written;
+    newTransition->headShift = headShift;
+    newTransition->nextTransition = NULL;
+    return newTransition;
 }
 
 void setAcceptedStates() {//scan acc
