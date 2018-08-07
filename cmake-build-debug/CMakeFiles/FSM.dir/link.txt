@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/FSM.dir/main.c.o  -o FSM 
+/usr/bin/cc -fopenmp -D_DEBUG   CMakeFiles/FSM.dir/main.c.o  -o FSM 

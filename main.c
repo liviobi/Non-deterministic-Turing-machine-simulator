@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #define FALSE 0
 #define TRUE 1
 #define STARTINGLEN 50
 #define STRINGLEN 10
-#define CHARACTERS 27
+#define CHARACTERS 58
 
 typedef  struct execution_s{
     int state;
@@ -85,22 +84,26 @@ int main() {
     //scan r
     char command[3];
     scanf("%s",command);
-    printf("%s\n", command);
+    //printf("%s\n", command);
 
+   int i = 11;
+    while(i) {
         executions = createFirstExecution();
         while (executions != NULL) {
             char redChar = readFromTape(executions);
             executeAllTransition(redChar);
-            printf("ended trasition for %c\n\n", redChar);
+            //printf("ended trasition for %c\n\n", redChar);
             freeFirstExecution();
         }
         printResult();
         result = -1;
+        i--;
+    }
 
-    //printFsm();
+   //printFsm();
 
     freeStatesBlocks();
-
+    return 0;
 
 }
 
@@ -115,11 +118,11 @@ void printResult() {
 }
 
 void executeAllTransition(char red) {
-    transition* transitionForRedChar = states[executions->state]->transitions[(int)red - 95];
+    transition* transitionForRedChar = states[executions->state]->transitions[(int)red - 65];
     while(transitionForRedChar != NULL){
         execution*clonedExecution = cloneExecution(executions);
         executions->nextExecution = clonedExecution;
-        printf("char red %c starting from state %d iteration %d cursor %d\n",red,clonedExecution->state,clonedExecution->iteration,clonedExecution->cursor);
+        //printf("char red %c starting from state %d iteration %d cursor %d\n",red,clonedExecution->state,clonedExecution->iteration,clonedExecution->cursor);
         int transitionResult = makeTransition(clonedExecution,transitionForRedChar);
         if(transitionResult == 0){
             result = 0;
@@ -167,13 +170,13 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     executionToUpdate->iteration++;
     if(executionToUpdate->iteration>maxIterations){
         //exceded maximum iterations
-        printf("\n\n\nexceded maximum iterations\n");
+        //printf("\n\n\nexceded maximum iterations\n");
         return 0;
     }
     executionToUpdate->state = transitionToApply->nextState;
     if(states[executionToUpdate->state]->acceptState){
         //found final state
-        printf("\n\n\nfound final staten\n");
+       // printf("\n\n\nfound final staten\n");
         return 1;
     }
 
@@ -181,29 +184,29 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
         executionToUpdate->inputString[executionToUpdate->cursor] = transitionToApply->written;
         if(transitionToApply->headShift =='L'){
             executionToUpdate->cursor--;
-            printf("state %d iteration %d cursor %d written %c moving L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("state %d iteration %d cursor %d written %c moving L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }else if(transitionToApply->headShift == 'R'){
             executionToUpdate->cursor++;
-            printf("state %d iteration %d cursor %d written %c moving R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+           // printf("state %d iteration %d cursor %d written %c moving R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             if(executionToUpdate->cursor==executionToUpdate->inputStringLen){
                 reallocInputString(executionToUpdate);
             }
         }else{
-            printf("state %d iteration %d cursor %d written %c not moving\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("state %d iteration %d cursor %d written %c not moving\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }
     }else{
         executionToUpdate->leftBlanks[executionToUpdate->cursor*(-1)] = transitionToApply->written;
         if(transitionToApply->headShift =='L'){
             executionToUpdate->cursor--;
-            printf("state %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+           // printf("state %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             if(executionToUpdate->cursor*(-1) == executionToUpdate->leftBlanksLen){
                 reallocLeftBlanks(executionToUpdate);
             }
         }else if(transitionToApply->headShift == 'R'){
             executionToUpdate->cursor++;
-            printf("state %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("state %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }else{
-            printf("state %d iteration %d cursor %d written %c leaving blank\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("state %d iteration %d cursor %d written %c leaving blank\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }
     }
     return -1;
@@ -323,7 +326,7 @@ void printFsm() {
                 for(int transitionCharIndex = 0; transitionCharIndex<CHARACTERS;transitionCharIndex++){
                     transition *transitionToPrint = states[i]->transitions[transitionCharIndex];
                     while (transitionToPrint != NULL){
-                        char transitionChar = (char)transitionCharIndex + 95;
+                        char transitionChar = (char)transitionCharIndex + 65;
                         printf("%c %c %c %d \n",transitionChar,transitionToPrint->written,transitionToPrint->headShift,transitionToPrint->nextState);
                         transitionToPrint = transitionToPrint->nextTransition;
 
@@ -350,17 +353,18 @@ void setupStates() {
 
     //scan tr
     scanf("%s", command);
-    printf("%s\n", command);
+    //printf("%s\n", command);
     while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5){
-        printf("%d %c %c %c %d\n",currentState,red,written,headShift,nextState);
+        //printf("%d %c %c %c %d\n",currentState,red,written,headShift,nextState);
+        int pos = red-65 ;
         if(states[currentState]== NULL){
             state *newState = createNewState(currentState);
             transition *newTransition = createNewTransition(written, headShift, nextState);
-            newState->transitions[red-95] = newTransition;
+            newState->transitions[pos] = newTransition;
         }else{
             transition* newTransition = createNewTransition(written, headShift, nextState);
-            newTransition->nextTransition = states[currentState]->transitions[red-95];
-            states[currentState]->transitions[red-95] = newTransition;
+            newTransition->nextTransition = states[currentState]->transitions[pos];
+            states[currentState]->transitions[pos] = newTransition;
             }
     }
 }
@@ -391,10 +395,10 @@ transition *createNewTransition(char written, char headShift, int nextState) {
 void setAcceptedStates() {//scan acc
     char command[3];
     scanf("%s",command);
-    printf("%s\n", command);
+    //printf("%s\n", command);
     int acceptedState;
     while(scanf("%d", &acceptedState) == 1){
-        printf("%d\n",acceptedState);
+        //printf("%d\n",acceptedState);
         if (states[acceptedState] != NULL){
             states[acceptedState]->acceptState = TRUE; //should never be executed
         }else{
@@ -409,7 +413,7 @@ void setAcceptedStates() {//scan acc
 void setMaxTransitions() {//scan max
     char command[3];
     scanf("%s",command);
-    printf("%s\n", command);
+    //printf("%s\n", command);
     scanf("%d",&maxIterations);
-    printf("%d\n",maxIterations);
+    //printf("%d\n",maxIterations);
 }
