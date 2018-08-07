@@ -49,7 +49,7 @@ void freeStatesBlocks();
 
 execution *newExecution(int,int,int,int,int);
 
-execution *createFirstExecution();
+int createFirstExecution();
 
 execution *cloneExecution(execution *executionToClone);
 
@@ -86,9 +86,7 @@ int main() {
     scanf("%s",command);
     //printf("%s\n", command);
 
-   int i = 11;
-    while(i) {
-        executions = createFirstExecution();
+    while(createFirstExecution() == 1) {
         while (executions != NULL) {
             char redChar = readFromTape(executions);
             executeAllTransition(redChar);
@@ -97,7 +95,6 @@ int main() {
         }
         printResult();
         result = -1;
-        i--;
     }
 
    //printFsm();
@@ -224,11 +221,12 @@ execution *cloneExecution(execution *executionToClone) {
     return clonedExecution;
 }
 
-execution *createFirstExecution() {
+int createFirstExecution() {
     execution*firstExec = newExecution(0, 0, 0, STRINGLEN, STRINGLEN);
     char c;
-    scanf(" %c", &c);
-    for(int i = 0;c != '\n';i++){
+    int end;
+    end = scanf(" %c", &c);
+    for(int i = 0;c != '\n' && end != EOF;i++){
         if(i<firstExec->inputStringLen){
             firstExec->inputString[i] = c;
         }else{
@@ -236,9 +234,13 @@ execution *createFirstExecution() {
             firstExec->inputString[i] = c;
 
         }
-        scanf("%c", &c);
+        end = scanf("%c", &c);
     }
-    return firstExec;
+    if(end == EOF){
+        return 0;
+    }
+    executions = firstExec;
+    return 1;
 }
 
 void reallocInputString(execution *executionToModify) {
