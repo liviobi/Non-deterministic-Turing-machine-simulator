@@ -223,21 +223,21 @@ execution *cloneExecution(execution *executionToClone) {
 
 int createFirstExecution() {
     execution*firstExec = newExecution(0, 0, 0, STRINGLEN, STRINGLEN);
-    char c;
+    char c = '\n';
     int end;
     end = scanf(" %c", &c);
+    if(end == EOF){
+        freeExecution(firstExec);
+        return 0;
+    }
     for(int i = 0;c != '\n' && end != EOF;i++){
         if(i<firstExec->inputStringLen){
             firstExec->inputString[i] = c;
         }else{
             reallocInputString(firstExec);
             firstExec->inputString[i] = c;
-
         }
         end = scanf("%c", &c);
-    }
-    if(end == EOF){
-        return 0;
     }
     executions = firstExec;
     return 1;
