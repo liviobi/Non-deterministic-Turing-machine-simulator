@@ -4,6 +4,7 @@
 #define TRUE 1
 #define STARTINGLEN 50
 #define STRINGLEN 10
+#define BLANKLEN 2
 #define CHARACTERS 58
 
 typedef  struct execution_s{
@@ -222,7 +223,7 @@ execution *cloneExecution(execution *executionToClone) {
 }
 
 int createFirstExecution() {
-    execution*firstExec = newExecution(0, 0, 0, STRINGLEN, STRINGLEN);
+    execution*firstExec = newExecution(0, 0, 0, STRINGLEN, BLANKLEN);
     char c = '\n';
     int end;
     end = scanf(" %c", &c);
