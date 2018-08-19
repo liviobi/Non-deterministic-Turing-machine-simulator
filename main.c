@@ -2,13 +2,31 @@
 #include <stdlib.h>
 #define FALSE 0
 #define TRUE 1
-#define STARTINGLEN 50
 #define STRINGLEN 10
 #define BLANKLEN 2
 #define CHARACTERS 58
 
+typedef struct transition_s{
+    char written;
+    char headShift;
+    struct state_s*nextState;
+    struct transition_s*nextTransition;
+}transition;
+
+typedef struct state_s {
+    int acceptState;
+    transition **transitions;
+} state;
+
+typedef struct node_s {
+    int stateIndex ;
+    state*stateInNode;
+    struct node_s*left;
+    struct node_s*right;
+} node;
+
 typedef  struct execution_s{
-    int state;
+    state*currentState;
     int iteration;
     int cursor;
     int inputStringLen;
@@ -18,20 +36,8 @@ typedef  struct execution_s{
     struct execution_s*nextExecution;
 }execution;
 
-typedef struct transition_s{
-    char written;
-    char headShift;
-    int  nextState;
-    struct transition_s*nextTransition;
-}transition;
-
-typedef struct state_s {
-    int acceptState;
-    transition **transitions;
-} state;
-
 int maxIterations; //todo see for long or double
-state **states;
+node*root = NULL;
 execution*executions;
 int result = -1;
 
@@ -41,14 +47,7 @@ void setAcceptedStates();
 
 void setupStates();
 
-void printFsm();
-
 void freeTransition(transition*transitionToFree);
-
-
-void freeStatesBlocks();
-
-execution *newExecution(int,int,int,int,int);
 
 int createFirstExecution();
 
@@ -72,9 +71,21 @@ void freeFirstExecution();
 
 void printResult();
 
-transition *createNewTransition(char written, char headShift, int nextState);
+void setupRoot(int state);
 
-state *createNewState(int stateToCreate);
+state *searchAddState(node*fatherNode, int stateToFind) ;
+
+node *createNewNode(int stateIndex);
+
+state *createNewState() ;
+
+transition *createNewTransition(char written, char headShift, state*nextState) ;
+
+void printStatesTree(node *nodeToPrint);
+
+execution *createNewExecution(state *state, int cursor, int iteration, int inputStringLen, int leftBlanksLen) ;
+
+void freeStatesTree(node *nodeToFree);
 
 //todo check for empty inputs
 int main() {
@@ -98,10 +109,46 @@ int main() {
         result = -1;
     }
 
-   //printFsm();
+    //printStatesTree(root);
+    freeStatesTree(root);
 
-    freeStatesBlocks();
     return 0;
+
+}
+
+void freeStatesTree(node *nodeToFree) {
+    if(nodeToFree->left != NULL){
+        freeStatesTree(nodeToFree->left);
+    }
+    if(nodeToFree->right != NULL){
+        freeStatesTree(nodeToFree->right);
+    }
+
+    for(int i = 0; i < CHARACTERS; i++){
+        transition*transitionToFree = nodeToFree->stateInNode->transitions[i];
+        transition*temp;
+        while (transitionToFree != NULL){
+            temp = transitionToFree->nextTransition;
+            free(transitionToFree);
+            transitionToFree = temp;
+
+        }
+    }
+    free(nodeToFree->stateInNode->transitions);
+    free(nodeToFree->stateInNode);
+    free(nodeToFree);
+}
+
+void printStatesTree(node *nodeToPrint) {
+    if(nodeToPrint->left != NULL){
+        printStatesTree(nodeToPrint->left);
+    }
+
+    printf("%d\n",nodeToPrint->stateIndex);
+
+    if(nodeToPrint->right != NULL){
+        printStatesTree(nodeToPrint->right);
+    }
 
 }
 
@@ -116,11 +163,11 @@ void printResult() {
 }
 
 void executeAllTransition(char red) {
-    transition* transitionForRedChar = states[executions->state]->transitions[(int)red - 65];
+    transition* transitionForRedChar = executions->currentState->transitions[(int)red - 65];
     while(transitionForRedChar != NULL){
         execution*clonedExecution = cloneExecution(executions);
         executions->nextExecution = clonedExecution;
-        //printf("char red %c starting from state %d iteration %d cursor %d\n",red,clonedExecution->state,clonedExecution->iteration,clonedExecution->cursor);
+        //printf("char red %c starting from currentState %d iteration %d cursor %d\n",red,clonedExecution->currentState,clonedExecution->iteration,clonedExecution->cursor);
         int transitionResult = makeTransition(clonedExecution,transitionForRedChar);
         if(transitionResult == 0){
             result = 0;
@@ -171,9 +218,9 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
         //printf("\n\n\nexceded maximum iterations\n");
         return 0;
     }
-    executionToUpdate->state = transitionToApply->nextState;
-    if(states[executionToUpdate->state]->acceptState){
-        //found final state
+    executionToUpdate->currentState = transitionToApply->nextState;
+    if(executionToUpdate->currentState->acceptState){
+        //found final currentState
        // printf("\n\n\nfound final staten\n");
         return 1;
     }
@@ -182,36 +229,38 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
         executionToUpdate->inputString[executionToUpdate->cursor] = transitionToApply->written;
         if(transitionToApply->headShift =='L'){
             executionToUpdate->cursor--;
-            //printf("state %d iteration %d cursor %d written %c moving L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("currentState %d iteration %d cursor %d written %c moving L\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }else if(transitionToApply->headShift == 'R'){
             executionToUpdate->cursor++;
-           // printf("state %d iteration %d cursor %d written %c moving R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+           // printf("currentState %d iteration %d cursor %d written %c moving R\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             if(executionToUpdate->cursor==executionToUpdate->inputStringLen){
                 reallocInputString(executionToUpdate);
             }
         }else{
-            //printf("state %d iteration %d cursor %d written %c not moving\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("currentState %d iteration %d cursor %d written %c not moving\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }
     }else{
         executionToUpdate->leftBlanks[executionToUpdate->cursor*(-1)] = transitionToApply->written;
         if(transitionToApply->headShift =='L'){
             executionToUpdate->cursor--;
-           // printf("state %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+           // printf("currentState %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
             if(executionToUpdate->cursor*(-1) == executionToUpdate->leftBlanksLen){
                 reallocLeftBlanks(executionToUpdate);
             }
         }else if(transitionToApply->headShift == 'R'){
             executionToUpdate->cursor++;
-            //printf("state %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("currentState %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }else{
-            //printf("state %d iteration %d cursor %d written %c leaving blank\n",executionToUpdate->state,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+            //printf("currentState %d iteration %d cursor %d written %c leaving blank\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
         }
     }
     return -1;
 }
 
 execution *cloneExecution(execution *executionToClone) {
-    execution*clonedExecution = newExecution(executionToClone->state,executionToClone->cursor,executionToClone->iteration,executionToClone->inputStringLen,executionToClone->leftBlanksLen);
+    execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,
+                                                   executionToClone->iteration, executionToClone->inputStringLen,
+                                                   executionToClone->leftBlanksLen);
     clonedExecution->nextExecution = executionToClone->nextExecution;
     for(int copiedCharIndex = 0; copiedCharIndex<executionToClone->inputStringLen;copiedCharIndex++){
         clonedExecution->inputString[copiedCharIndex] = executionToClone->inputString[copiedCharIndex];
@@ -223,7 +272,8 @@ execution *cloneExecution(execution *executionToClone) {
 }
 
 int createFirstExecution() {
-    execution*firstExec = newExecution(0, 0, 0, STRINGLEN, BLANKLEN);
+    state*stateZero = searchAddState(root,0);
+    execution*firstExec = createNewExecution(stateZero, 0, 0, STRINGLEN, BLANKLEN);
     char c = '\n';
     int end;
     end = scanf(" %c", &c);
@@ -272,9 +322,9 @@ void reallocLeftBlanks(execution *executionToModify) {
     executionToModify->leftBlanksLen = newLeftBlanksLen;
 }
 
-execution *newExecution(int state,int cursor,int iteration,int inputStringLen, int leftBlanksLen) {
+execution *createNewExecution(state *state, int cursor, int iteration, int inputStringLen, int leftBlanksLen) {
     execution*newExecution = (execution*)malloc(sizeof(execution));
-    newExecution->state = state;
+    newExecution->currentState = state;
     newExecution->cursor = cursor;
     newExecution->iteration = iteration;
     newExecution->nextExecution = NULL;
@@ -291,22 +341,6 @@ execution *newExecution(int state,int cursor,int iteration,int inputStringLen, i
     return newExecution;
 }
 
-void freeStatesBlocks() {
-    for(int stateIndex = 0; stateIndex < STARTINGLEN; stateIndex++){
-        if(states[stateIndex]!= NULL){
-            if(states[stateIndex]->transitions != NULL){
-                for(int transitionCharacterIndex = 0; transitionCharacterIndex < CHARACTERS;transitionCharacterIndex++){
-                   freeTransition(states[stateIndex]->transitions[transitionCharacterIndex]);
-                }
-                free(states[stateIndex]->transitions);
-            }
-            free(states[stateIndex]);
-
-        }
-    }
-    free(states);
-}
-
 void freeTransition(transition*transitionToFree){
     if(transitionToFree == NULL) {
         return;
@@ -317,30 +351,6 @@ void freeTransition(transition*transitionToFree){
 
 }
 
-void printFsm() {
-    for(int i =0; i < STARTINGLEN; i++){
-        if (states[i] != NULL){
-            printf("\n%d ",i);
-            if(states[i]->acceptState){
-                printf("accept");
-            }
-            printf("\n");
-            if(states[i]->transitions !=NULL){
-                for(int transitionCharIndex = 0; transitionCharIndex<CHARACTERS;transitionCharIndex++){
-                    transition *transitionToPrint = states[i]->transitions[transitionCharIndex];
-                    while (transitionToPrint != NULL){
-                        char transitionChar = (char)transitionCharIndex + 65;
-                        printf("%c %c %c %d \n",transitionChar,transitionToPrint->written,transitionToPrint->headShift,transitionToPrint->nextState);
-                        transitionToPrint = transitionToPrint->nextTransition;
-
-                    }
-
-                }
-            }
-        }
-    }
-}
-
 void setupStates() {
     char command[3];
     int currentState;
@@ -348,46 +358,75 @@ void setupStates() {
     char written;
     char headShift;
     int nextState;
-
-    states = (state **)malloc(STARTINGLEN*sizeof(state));  //todo non funziona se gli stati hanno numeri grandi
-    for (int stateToInit = 0; stateToInit < STARTINGLEN; stateToInit++) {
-        states[stateToInit] = NULL;
-    }
+    int pos;
 
     //scan tr
     scanf("%s", command);
-    //printf("%s\n", command);
-    while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5){
-        //printf("%d %c %c %c %d\n",currentState,red,written,headShift,nextState);
-        int pos = red-65 ;
-        if(states[currentState]== NULL){
-            state *newState = createNewState(currentState);
-            transition *newTransition = createNewTransition(written, headShift, nextState);
-            newState->transitions[pos] = newTransition;
+    //setup the root
+    if(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5){
+        setupRoot(currentState);
+        state*followingState = searchAddState(root,nextState);
+        pos = red - 65;
+        transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
+        newTransition->nextTransition = root->stateInNode->transitions[pos];
+        root->stateInNode->transitions[pos] = newTransition;
+    }else{
+        return;
+    }
+
+    while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5) {
+        state*followingState = searchAddState(root,nextState);
+        state *stateToAddTransition = searchAddState(root,currentState);
+        pos = red - 65;
+        transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
+        newTransition->nextTransition = stateToAddTransition->transitions[pos];
+        stateToAddTransition->transitions[pos] = newTransition;
+    }
+    }
+
+state *searchAddState(node*fatherNode, int stateToFind) {
+    if(fatherNode->stateIndex == stateToFind){
+        return fatherNode->stateInNode;
+    }else if(fatherNode->stateIndex > stateToFind){
+        if(fatherNode->left != NULL){
+            searchAddState(fatherNode->left,stateToFind);
         }else{
-            transition* newTransition = createNewTransition(written, headShift, nextState);
-            newTransition->nextTransition = states[currentState]->transitions[pos];
-            states[currentState]->transitions[pos] = newTransition;
-            }
+            fatherNode->left = createNewNode(stateToFind);
+            return fatherNode->left->stateInNode;
+        }
+    }else if(fatherNode->stateIndex < stateToFind){
+        if(fatherNode->right != NULL) {
+            searchAddState(fatherNode->right, stateToFind);
+        }else{
+            fatherNode->right = createNewNode(stateToFind);
+            return fatherNode->right->stateInNode;
+        }
     }
 }
 
-state *createNewState(int stateToCreate) {
+void setupRoot(int state) { root = createNewNode(state); }
+
+node *createNewNode(int stateIndex) {
+    node*newNode = (node*)malloc(sizeof(node));
+    newNode->stateIndex = stateIndex;
+    newNode->stateInNode = createNewState();
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+state *createNewState() {
     state* newState = (state *)malloc(sizeof(state));
     newState->acceptState = FALSE;
     newState->transitions = (transition**)malloc(CHARACTERS*sizeof(transition*));
     for(int i = 0;i<CHARACTERS;i++){
         newState->transitions[i] = NULL;
     }
-    states[stateToCreate] = newState;
     return newState;
 }
 
-transition *createNewTransition(char written, char headShift, int nextState) {
+transition *createNewTransition(char written, char headShift, state*nextState) {
     transition* newTransition = (transition *)malloc(sizeof(transition));
-    if(states[nextState] == NULL){
-        createNewState(nextState);
-    }
     newTransition->nextState = nextState;
     newTransition->written = written;
     newTransition->headShift = headShift;
@@ -399,17 +438,10 @@ void setAcceptedStates() {//scan acc
     char command[3];
     scanf("%s",command);
     //printf("%s\n", command);
-    int acceptedState;
-    while(scanf("%d", &acceptedState) == 1){
-        //printf("%d\n",acceptedState);
-        if (states[acceptedState] != NULL){
-            states[acceptedState]->acceptState = TRUE; //should never be executed
-        }else{
-            state* newState = (state *)malloc(sizeof(state));
-            states[acceptedState] = newState;
-            newState->acceptState = TRUE;
-            newState->transitions = NULL;
-        }
+    int acceptedStateIndex;
+    while(scanf("%d", &acceptedStateIndex) == 1){
+        state*acceptedState = searchAddState(root,acceptedStateIndex);
+        acceptedState->acceptState = TRUE;
     }
 }
 
