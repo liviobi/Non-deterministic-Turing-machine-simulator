@@ -260,7 +260,8 @@ int createFirstExecution() {
         freeExecution(firstExec);
         return 0;
     }
-    for(int i = 0;c != '\n' && end != EOF;i++){
+    int i;
+    for(i = 0;c != '\n' && end != EOF;i++){
         if(i<firstExec->inputStringLen){
             firstExec->inputString[i] = c;
         }else{
@@ -269,6 +270,11 @@ int createFirstExecution() {
         }
         end = scanf("%c", &c);
     }
+    //end with blanks
+    for(; i<firstExec->inputStringLen;i++){ //todo see if it's necessary
+        firstExec->inputString[i] = '_';
+    }
+
     executions = firstExec;
     return 1;
 }
@@ -313,9 +319,6 @@ execution *createNewExecution(state *state, int cursor, int iteration, int input
     newExecution->nextExecution = NULL;
     newExecution->inputStringLen = inputStringLen;
     newExecution->inputString = (char*)malloc(newExecution->inputStringLen*sizeof(char));
-    for(int i = 0; i<newExecution->inputStringLen;i++){ //todo see if it's necessary
-        newExecution->inputString[i] = '_';
-    }
     return newExecution;
 }
 
