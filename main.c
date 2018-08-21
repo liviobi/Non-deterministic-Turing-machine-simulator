@@ -103,7 +103,7 @@ int main() {
             char redChar = readFromTape(executions);
             executeAllTransition(redChar);
             //printf("ended trasition for %c\n\n", redChar);
-            freeFirstExecution();
+            //freeFirstExecution();
         }
         printResult();
         result = -1;
@@ -164,21 +164,42 @@ void printResult() {
 
 void executeAllTransition(char red) {
     transition* transitionForRedChar = executions->currentState->transitions[(int)red - 65];
+    int transitionResult;
+
+    if(transitionForRedChar == NULL){
+        freeFirstExecution();
+        return;
+    }
     while(transitionForRedChar != NULL){
-        execution*clonedExecution = cloneExecution(executions);
-        executions->nextExecution = clonedExecution;
-        //printf("char red %c starting from currentState %d iteration %d cursor %d\n",red,clonedExecution->currentState,clonedExecution->iteration,clonedExecution->cursor);
-        //printString(clonedExecution);
-        int transitionResult = makeTransition(clonedExecution,transitionForRedChar);
-        if(transitionResult == 0){
-            result = 0;
-            executions->nextExecution = clonedExecution->nextExecution;
-            freeExecution(clonedExecution);
-        }else if(transitionResult == 1){
-            result = 1;
-            freeAllExecutions();
-            return;
+        //whenever I have more than one transition I clone the fsm and execute it
+        if(transitionForRedChar->nextTransition != NULL){
+            execution*clonedExecution = cloneExecution(executions);
+            executions->nextExecution = clonedExecution;
+            transitionResult = makeTransition(clonedExecution,transitionForRedChar);
+            if(transitionResult == 0){
+                result = 0;
+                executions->nextExecution = clonedExecution->nextExecution;
+                freeExecution(clonedExecution);
+            }else if(transitionResult == 1){
+                result = 1;
+                freeAllExecutions();
+                return;
+            }
+        }else{
+            //if I reach the last transition I don't clone it anymore I just update it
+            transitionResult = makeTransition(executions,transitionForRedChar);
+            if(transitionResult == 0){
+                result = 0;
+                execution*execToDelete = executions;
+                executions = executions->nextExecution;
+                freeExecution(execToDelete);
+            }else if(transitionResult == 1){
+                result = 1;
+                freeAllExecutions();
+                return;
+            }
         }
+
         transitionForRedChar = transitionForRedChar->nextTransition;
     }
 }
