@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #define FALSE 0
 #define TRUE 1
-#define STRINGLEN 10
-#define BLANKLEN 2
+#define STARTINGLENGTH 10
 #define CHARACTERS 58
+#define REALLOC_INDEX 2
 
 typedef struct transition_s{
     char written;
@@ -30,9 +30,7 @@ typedef  struct execution_s{
     int iteration;
     int cursor;
     int inputStringLen;
-    int leftBlanksLen;
     char*inputString;
-    char*leftBlanks;
     struct execution_s*nextExecution;
 }execution;
 
@@ -53,9 +51,9 @@ int createFirstExecution();
 
 execution *cloneExecution(execution *executionToClone);
 
-void reallocInputString(execution *executionToModify);
+void reallocInputStringRight(execution *executionToModify);
 
-void reallocLeftBlanks(execution *executionToModify);
+void reallocInputStringLeft(execution *executionToModify);
 
 int makeTransition(execution*executionToUpdate,transition*transitionToApply);
 
@@ -83,9 +81,11 @@ transition *createNewTransition(char written, char headShift, state*nextState) ;
 
 void printStatesTree(node *nodeToPrint);
 
-execution *createNewExecution(state *state, int cursor, int iteration, int inputStringLen, int leftBlanksLen) ;
-
 void freeStatesTree(node *nodeToFree);
+
+execution *createNewExecution(state *state, int cursor, int iteration, int inputStringLen) ;
+
+void printString(execution *executiontoPrint);
 
 //todo check for empty inputs
 int main() {
@@ -168,6 +168,7 @@ void executeAllTransition(char red) {
         execution*clonedExecution = cloneExecution(executions);
         executions->nextExecution = clonedExecution;
         //printf("char red %c starting from currentState %d iteration %d cursor %d\n",red,clonedExecution->currentState,clonedExecution->iteration,clonedExecution->cursor);
+        //printString(clonedExecution);
         int transitionResult = makeTransition(clonedExecution,transitionForRedChar);
         if(transitionResult == 0){
             result = 0;
@@ -180,6 +181,13 @@ void executeAllTransition(char red) {
         }
         transitionForRedChar = transitionForRedChar->nextTransition;
     }
+}
+
+void printString(execution *executiontoPrint) {
+    for(int i=0; i<executiontoPrint->inputStringLen;i++){
+        printf("%c",executiontoPrint->inputString[i]);
+    }
+    printf("\n");
 }
 
 void freeAllExecutions() {
@@ -199,81 +207,52 @@ void freeFirstExecution() {
 
 void freeExecution(execution *executionToFree) {
     free(executionToFree->inputString);
-    free(executionToFree->leftBlanks);
     free(executionToFree);
 }
 
-char readFromTape(execution *runningExecution) {
-    if(runningExecution->cursor >= 0){
-        return runningExecution->inputString[runningExecution->cursor];
-    }else{
-        return runningExecution->leftBlanks[runningExecution->cursor * (-1)];
-    }
+char readFromTape(execution *runningExecution) { //todo see if i must delete it
+    return runningExecution->inputString[runningExecution->cursor];
 }
 
 int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     executionToUpdate->iteration++;
     if(executionToUpdate->iteration>maxIterations){
         //exceded maximum iterations
-        //printf("\n\n\nexceded maximum iterations\n");
         return 0;
     }
     executionToUpdate->currentState = transitionToApply->nextState;
     if(executionToUpdate->currentState->acceptState){
         //found final currentState
-       // printf("\n\n\nfound final staten\n");
         return 1;
     }
 
-    if(executionToUpdate->cursor>=0){
-        executionToUpdate->inputString[executionToUpdate->cursor] = transitionToApply->written;
-        if(transitionToApply->headShift =='L'){
-            executionToUpdate->cursor--;
-            //printf("currentState %d iteration %d cursor %d written %c moving L\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
-        }else if(transitionToApply->headShift == 'R'){
-            executionToUpdate->cursor++;
-           // printf("currentState %d iteration %d cursor %d written %c moving R\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
-            if(executionToUpdate->cursor==executionToUpdate->inputStringLen){
-                reallocInputString(executionToUpdate);
-            }
-        }else{
-            //printf("currentState %d iteration %d cursor %d written %c not moving\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+    executionToUpdate->inputString[executionToUpdate->cursor] = transitionToApply->written;
+    if(transitionToApply->headShift =='L'){
+        executionToUpdate->cursor--;
+        if(executionToUpdate->cursor<0){
+            reallocInputStringLeft(executionToUpdate);
         }
-    }else{
-        executionToUpdate->leftBlanks[executionToUpdate->cursor*(-1)] = transitionToApply->written;
-        if(transitionToApply->headShift =='L'){
-            executionToUpdate->cursor--;
-           // printf("currentState %d iteration %d cursor %d written %c moving blank L\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
-            if(executionToUpdate->cursor*(-1) == executionToUpdate->leftBlanksLen){
-                reallocLeftBlanks(executionToUpdate);
-            }
-        }else if(transitionToApply->headShift == 'R'){
-            executionToUpdate->cursor++;
-            //printf("currentState %d iteration %d cursor %d written %c moving blank R\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
-        }else{
-            //printf("currentState %d iteration %d cursor %d written %c leaving blank\n",executionToUpdate->currentState,executionToUpdate->iteration,executionToUpdate->cursor,transitionToApply->written);
+    }else if(transitionToApply->headShift == 'R'){
+        executionToUpdate->cursor++;
+        if(executionToUpdate->cursor==executionToUpdate->inputStringLen){
+            reallocInputStringRight(executionToUpdate);
         }
     }
     return -1;
 }
 
 execution *cloneExecution(execution *executionToClone) {
-    execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,
-                                                   executionToClone->iteration, executionToClone->inputStringLen,
-                                                   executionToClone->leftBlanksLen);
+    execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,executionToClone->iteration, executionToClone->inputStringLen);
     clonedExecution->nextExecution = executionToClone->nextExecution;
     for(int copiedCharIndex = 0; copiedCharIndex<executionToClone->inputStringLen;copiedCharIndex++){
         clonedExecution->inputString[copiedCharIndex] = executionToClone->inputString[copiedCharIndex];
-    }
-    for(int copiedBlank = 0; copiedBlank < executionToClone->leftBlanksLen;copiedBlank++){
-        clonedExecution->leftBlanks[copiedBlank] = executionToClone->leftBlanks[copiedBlank];
     }
     return clonedExecution;
 }
 
 int createFirstExecution() {
     state*stateZero = searchAddState(root,0);
-    execution*firstExec = createNewExecution(stateZero, 0, 0, STRINGLEN, BLANKLEN);
+    execution*firstExec = createNewExecution(stateZero, 0, 0, STARTINGLENGTH);
     char c = '\n';
     int end;
     end = scanf(" %c", &c);
@@ -285,7 +264,7 @@ int createFirstExecution() {
         if(i<firstExec->inputStringLen){
             firstExec->inputString[i] = c;
         }else{
-            reallocInputString(firstExec);
+            reallocInputStringRight(firstExec);
             firstExec->inputString[i] = c;
         }
         end = scanf("%c", &c);
@@ -294,49 +273,48 @@ int createFirstExecution() {
     return 1;
 }
 
-void reallocInputString(execution *executionToModify) {
+void reallocInputStringRight(execution *executionToModify) {
     char*oldInputString = executionToModify ->inputString;
-    int newInputStringLen = executionToModify->inputStringLen*2;
+    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
     for(int copiedCharIndex = 0;copiedCharIndex<executionToModify->inputStringLen;copiedCharIndex++){
                 executionToModify->inputString[copiedCharIndex] = oldInputString[copiedCharIndex];
-            }
+    }
     for(int blankIndex = executionToModify->inputStringLen;blankIndex<newInputStringLen;blankIndex++){
-                executionToModify->inputString[blankIndex] = '_';
-            }
+        executionToModify->inputString[blankIndex] = '_';
+    }
     free(oldInputString);
     executionToModify->inputStringLen = newInputStringLen;
 }
 
-void reallocLeftBlanks(execution *executionToModify) {
-    char*oldLeftBlanks = executionToModify ->leftBlanks;
-    int newLeftBlanksLen = executionToModify->leftBlanksLen*2;
-    executionToModify->leftBlanks = (char*)malloc((newLeftBlanksLen)*sizeof(char));
-    for(int copiedCharIndex = 0;copiedCharIndex<executionToModify->leftBlanksLen;copiedCharIndex++){
-        executionToModify->leftBlanks[copiedCharIndex] = oldLeftBlanks[copiedCharIndex];
+void reallocInputStringLeft(execution *executionToModify) {
+    char*oldInputString = executionToModify ->inputString;
+    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
+    int oldInputStringLen = executionToModify->inputStringLen;
+    executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
+
+    for(int blankIndex = 0; blankIndex < oldInputStringLen; blankIndex++){
+        executionToModify->inputString[blankIndex] = '_';
     }
-    for(int blankIndex = executionToModify->leftBlanksLen;blankIndex<newLeftBlanksLen;blankIndex++){
-        executionToModify->leftBlanks[blankIndex] = '_';
+
+    for(int copiedCharIndex = oldInputStringLen; copiedCharIndex < newInputStringLen; copiedCharIndex++){
+        executionToModify->inputString[copiedCharIndex] = oldInputString[copiedCharIndex - oldInputStringLen];
     }
-    free(oldLeftBlanks);
-    executionToModify->leftBlanksLen = newLeftBlanksLen;
+    free(oldInputString);
+    executionToModify->cursor = newInputStringLen - oldInputStringLen -1;
+    executionToModify->inputStringLen = newInputStringLen;
 }
 
-execution *createNewExecution(state *state, int cursor, int iteration, int inputStringLen, int leftBlanksLen) {
+execution *createNewExecution(state *state, int cursor, int iteration, int inputStringLen) {
     execution*newExecution = (execution*)malloc(sizeof(execution));
     newExecution->currentState = state;
     newExecution->cursor = cursor;
     newExecution->iteration = iteration;
     newExecution->nextExecution = NULL;
     newExecution->inputStringLen = inputStringLen;
-    newExecution->leftBlanksLen = leftBlanksLen;
     newExecution->inputString = (char*)malloc(newExecution->inputStringLen*sizeof(char));
-    newExecution->leftBlanks = (char*)malloc(newExecution->leftBlanksLen*sizeof(char));
-    for(int i = 0; i<newExecution->inputStringLen;i++){
+    for(int i = 0; i<newExecution->inputStringLen;i++){ //todo see if it's necessary
         newExecution->inputString[i] = '_';
-    }
-    for(int i = 0; i<newExecution->leftBlanksLen;i++){
-        newExecution->leftBlanks[i] = '_';
     }
     return newExecution;
 }
