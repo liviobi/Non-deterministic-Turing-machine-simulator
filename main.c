@@ -4,7 +4,7 @@
 #define TRUE 1
 #define STARTINGLENGTH 10
 #define REALLOC_INDEX 2
-#define HASHLEN 5
+#define HASHLEN 1
 #define REHASH 0.7
 #define REHASH_INDEX 2
 
@@ -106,6 +106,8 @@ void rehash(state *stateToUpdate);
 
 void fastInsertInTable(struct container_s **hashTable, int containerToInsert, container *pS);
 
+void freeNodeTree(node *nodeToFree);
+
 //todo check for empty inputs
 int main() {
     setupStates();
@@ -117,7 +119,7 @@ int main() {
     scanf("%s",command);
     //printf("%s\n", command);
 
-    while(createFirstExecution() == 1) {
+   while(createFirstExecution() == 1) {
         while (executions != NULL) {
             char redChar = readFromTape(executions);
             executeAllTransition(redChar);
@@ -129,10 +131,20 @@ int main() {
     }
 
     //printStatesTree(root);
-    freeStatesTree(root);
+    //freeStatesTree(root);
 
     return 0;
 
+}
+
+void freeNodeTree(node *nodeToFree) {
+    if(nodeToFree->left != NULL){
+        freeNodeTree(nodeToFree->left);
+    }
+    if(nodeToFree->right != NULL){
+        freeNodeTree(nodeToFree->right);
+    }
+    free(nodeToFree);
 }
 
 void freeStatesTree(node *nodeToFree) {
@@ -229,6 +241,9 @@ void executeAllTransition(char red) {
 transition *getTransition(state *stateToSearch, char redChar) {
     int i = 1;
     int value;
+    if(stateToSearch->hashTable == NULL){
+        return NULL;
+    }
     while(1) {
         value = h(redChar,stateToSearch->tableDim,i);
         //if there's no container i create it and add the transition
@@ -423,6 +438,14 @@ void setupStates() {
     }
 
 void addTransitionToTable(state *stateToUpdate, char redChar, transition *transitionToAdd) {
+    if(stateToUpdate->hashTable == NULL){
+        stateToUpdate->tableDim = HASHLEN;
+        stateToUpdate->tableElements = 0;
+        stateToUpdate->hashTable = (container**)malloc(sizeof(container*)*stateToUpdate->tableDim);
+        for(int i = 0;i<stateToUpdate->tableDim;i++){
+            stateToUpdate->hashTable[i] = NULL;
+        }
+    }
     int i = 1;
     int value;
     while(1) {
@@ -521,12 +544,9 @@ node *createNewNode(int stateIndex) {
 state *createNewState() {
     state* newState = (state *)malloc(sizeof(state));
     newState->acceptState = FALSE;
-    newState->tableDim = HASHLEN;
+    newState->tableDim = 0;
     newState->tableElements = 0;
-    newState->hashTable = (container**)malloc(sizeof(container*)*newState->tableDim) ;
-    for(int i = 0;i<newState->tableDim;i++){
-        newState->hashTable[i] = NULL;
-    }
+    newState->hashTable = NULL;
     return newState;
 }
 

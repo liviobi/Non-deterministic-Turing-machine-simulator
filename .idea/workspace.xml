@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/main.c" line="453" mnemonic="0" />
-  </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
       <config projectName="FSM" targetName="FSM" />
@@ -32,8 +29,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-4065">
-              <caret line="131" column="4" lean-forward="true" selection-start-line="131" selection-start-column="4" selection-end-line="131" selection-end-column="4" />
+            <state relative-caret-position="144">
+              <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -60,8 +57,8 @@
       <find>STRINGLEN</find>
       <find>createnewexe</find>
       <find>createNewTransition</find>
-      <find>createNewState</find>
       <find>newState</find>
+      <find>createNewState</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -236,11 +233,18 @@
       <option name="project" value="LOCAL" />
       <updated>1534851947867</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="implemented hash table for transitions with reash">
+      <created>1535044278823</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1535044278823</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="151520000" />
+    <option name="totallyTimeSpent" value="154026000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
@@ -297,7 +301,8 @@
     <MESSAGE value="added continou read" />
     <MESSAGE value="fixed bug on continous line reading" />
     <MESSAGE value="removed blanks line" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed blanks line" />
+    <MESSAGE value="implemented hash table for transitions with reash" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented hash table for transitions with reash" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -610,8 +615,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4065">
-          <caret line="131" column="4" lean-forward="true" selection-start-line="131" selection-start-column="4" selection-end-line="131" selection-end-column="4" />
+        <state relative-caret-position="144">
+          <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
