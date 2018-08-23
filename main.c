@@ -3,8 +3,10 @@
 #define FALSE 0
 #define TRUE 1
 #define STARTINGLENGTH 10
-#define CHARACTERS 58
 #define REALLOC_INDEX 2
+#define HASHLEN 5
+#define REHASH 0.7
+#define REHASH_INDEX 2
 
 typedef struct transition_s{
     char written;
@@ -15,7 +17,9 @@ typedef struct transition_s{
 
 typedef struct state_s {
     int acceptState;
-    transition **transitions;
+    int tableDim;
+    int tableElements;
+    struct container_s**hashTable;
 } state;
 
 typedef struct node_s {
@@ -33,6 +37,11 @@ typedef  struct execution_s{
     char*inputString;
     struct execution_s*nextExecution;
 }execution;
+
+typedef  struct container_s{
+    char transitionChar;
+    transition*transitionForChar;
+}container;
 
 int maxIterations; //todo see for long or double
 node*root = NULL;
@@ -87,6 +96,16 @@ execution *createNewExecution(state *state, int cursor, int iteration, int input
 
 void printString(execution *executiontoPrint);
 
+void addTransitionToTable(state *stateToUpdate, char redChar, transition *transitonToAdd);
+
+int h(char key, int tableDim, int iteration);
+
+transition *getTransition(state *hashTable, char redChar);
+
+void rehash(state *stateToUpdate);
+
+void fastInsertInTable(struct container_s **hashTable, int containerToInsert, container *pS);
+
 //todo check for empty inputs
 int main() {
     setupStates();
@@ -124,17 +143,20 @@ void freeStatesTree(node *nodeToFree) {
         freeStatesTree(nodeToFree->right);
     }
 
-    for(int i = 0; i < CHARACTERS; i++){
-        transition*transitionToFree = nodeToFree->stateInNode->transitions[i];
-        transition*temp;
-        while (transitionToFree != NULL){
-            temp = transitionToFree->nextTransition;
-            free(transitionToFree);
-            transitionToFree = temp;
+    for(int i = 0; i < nodeToFree->stateInNode->tableDim; i++) {
+        if (nodeToFree->stateInNode->hashTable[i] != NULL) {
+            transition *transitionToFree = nodeToFree->stateInNode->hashTable[i]->transitionForChar;
+            transition *temp;
+            while (transitionToFree != NULL) {
+                temp = transitionToFree->nextTransition;
+                free(transitionToFree);
+                transitionToFree = temp;
 
+            }
+            free(nodeToFree->stateInNode->hashTable[i]);
         }
     }
-    free(nodeToFree->stateInNode->transitions);
+    free(nodeToFree->stateInNode->hashTable);
     free(nodeToFree->stateInNode);
     free(nodeToFree);
 }
@@ -163,7 +185,7 @@ void printResult() {
 }
 
 void executeAllTransition(char red) {
-    transition* transitionForRedChar = executions->currentState->transitions[(int)red - 65];
+    transition* transitionForRedChar = getTransition(executions->currentState,red);
     int transitionResult;
 
     if(transitionForRedChar == NULL){
@@ -201,6 +223,24 @@ void executeAllTransition(char red) {
         }
 
         transitionForRedChar = transitionForRedChar->nextTransition;
+    }
+}
+
+transition *getTransition(state *stateToSearch, char redChar) {
+    int i = 1;
+    int value;
+    while(1) {
+        value = h(redChar,stateToSearch->tableDim,i);
+        //if there's no container i create it and add the transition
+        if (stateToSearch->hashTable[value] == NULL) {
+            return NULL;
+        } else {
+            //if I already have a container for that character I first check if the container is right then I add the transition
+            if (stateToSearch->hashTable[value]->transitionChar == redChar) {
+                return stateToSearch->hashTable[value]->transitionForChar;
+            }
+            i++;
+        }
     }
 }
 
@@ -368,10 +408,8 @@ void setupStates() {
     if(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5){
         setupRoot(currentState);
         state*followingState = searchAddState(root,nextState);
-        pos = red - 65;
         transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
-        newTransition->nextTransition = root->stateInNode->transitions[pos];
-        root->stateInNode->transitions[pos] = newTransition;
+        addTransitionToTable(root->stateInNode,red,newTransition);
     }else{
         return;
     }
@@ -379,12 +417,75 @@ void setupStates() {
     while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5) {
         state*followingState = searchAddState(root,nextState);
         state *stateToAddTransition = searchAddState(root,currentState);
-        pos = red - 65;
         transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
-        newTransition->nextTransition = stateToAddTransition->transitions[pos];
-        stateToAddTransition->transitions[pos] = newTransition;
+        addTransitionToTable(stateToAddTransition,red,newTransition);
     }
     }
+
+void addTransitionToTable(state *stateToUpdate, char redChar, transition *transitionToAdd) {
+    int i = 1;
+    int value;
+    while(1) {
+        value = h(redChar,stateToUpdate->tableDim,i);
+        //if there's no container i create it and add the transition
+        if (stateToUpdate->hashTable[value] == NULL) {
+            stateToUpdate->hashTable[value] = (container *) malloc(sizeof(container));
+            stateToUpdate->tableElements++;
+            stateToUpdate->hashTable[value]->transitionChar = redChar;
+            transitionToAdd->nextTransition = NULL;
+            stateToUpdate->hashTable[value]->transitionForChar = transitionToAdd;
+            //if the table is too crowded
+            if(stateToUpdate->tableElements/stateToUpdate->tableDim>REHASH){
+                rehash(stateToUpdate);
+            }
+            break;
+        } else {
+            //if I already have a container for that character I first check if the container is right then I add the transition
+            if (stateToUpdate->hashTable[value]->transitionChar == redChar) {
+                transitionToAdd->nextTransition = stateToUpdate->hashTable[value]->transitionForChar;
+                stateToUpdate->hashTable[value]->transitionForChar = transitionToAdd;
+                break;
+            }
+            i++;
+        }
+    }
+}
+
+void rehash(state *stateToUpdate) {
+    int oldTableDim = stateToUpdate->tableDim;
+    container**oldTable = stateToUpdate->hashTable;
+    int newTableDim = stateToUpdate->tableDim*REHASH_INDEX;
+    stateToUpdate->hashTable = (container**)malloc(sizeof(container*)*newTableDim);
+    stateToUpdate->tableDim = newTableDim;
+    //initialize the newly created table
+    for(int i = 0; i<newTableDim;i++){
+        stateToUpdate->hashTable[i] = NULL;
+    }
+    for(int i = 0; i<oldTableDim;i++){
+        if(oldTable[i] != NULL){
+            fastInsertInTable(stateToUpdate->hashTable, newTableDim, oldTable[i]);
+        }
+    }
+    free(oldTable);
+}
+
+//funcion use only when rehashing
+void fastInsertInTable(struct container_s **hashTable, int tableDim, container *containerToInsert) {
+    int i = 1;
+    int value;
+    while(1) {
+        value = h(containerToInsert->transitionChar,tableDim,i);
+        if (hashTable[value] == NULL) {
+            hashTable[value] = containerToInsert;
+            break;
+        }
+        i++;
+    }
+}
+
+int h(char key, int tableDim, int iteration) {
+    return ((int)key+iteration)%tableDim;
+}
 
 state *searchAddState(node*fatherNode, int stateToFind) {
     if(fatherNode->stateIndex == stateToFind){
@@ -420,9 +521,11 @@ node *createNewNode(int stateIndex) {
 state *createNewState() {
     state* newState = (state *)malloc(sizeof(state));
     newState->acceptState = FALSE;
-    newState->transitions = (transition**)malloc(CHARACTERS*sizeof(transition*));
-    for(int i = 0;i<CHARACTERS;i++){
-        newState->transitions[i] = NULL;
+    newState->tableDim = HASHLEN;
+    newState->tableElements = 0;
+    newState->hashTable = (container**)malloc(sizeof(container*)*newState->tableDim) ;
+    for(int i = 0;i<newState->tableDim;i++){
+        newState->hashTable[i] = NULL;
     }
     return newState;
 }
