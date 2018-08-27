@@ -131,7 +131,7 @@ int main() {
     }
 
     //printStatesTree(root);
-    //freeStatesTree(root);
+    freeStatesTree(root);
 
     return 0;
 
@@ -371,16 +371,17 @@ void reallocInputStringRight(execution *executionToModify) {
 
 void reallocInputStringLeft(execution *executionToModify) {
     char*oldInputString = executionToModify ->inputString;
-    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     int oldInputStringLen = executionToModify->inputStringLen;
+    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
 
-    for(int blankIndex = 0; blankIndex < oldInputStringLen; blankIndex++){
+    int blanksEnd = newInputStringLen - oldInputStringLen;
+    for(int blankIndex = 0; blankIndex < blanksEnd; blankIndex++){
         executionToModify->inputString[blankIndex] = '_';
     }
 
-    for(int copiedCharIndex = oldInputStringLen; copiedCharIndex < newInputStringLen; copiedCharIndex++){
-        executionToModify->inputString[copiedCharIndex] = oldInputString[copiedCharIndex - oldInputStringLen];
+    for(int copiedCharIndex = blanksEnd; copiedCharIndex < newInputStringLen; copiedCharIndex++){
+        executionToModify->inputString[copiedCharIndex] = oldInputString[copiedCharIndex - blanksEnd];
     }
     free(oldInputString);
     executionToModify->cursor = newInputStringLen - oldInputStringLen -1;
