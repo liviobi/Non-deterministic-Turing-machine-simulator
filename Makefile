@@ -42,19 +42,19 @@ compileval:
 compileval1:
 	gcc -g -DEVAL -std=c11 -O2 -pipe -s -o p main.c -lm
 valreport: compileval
-	cat test/IncreasingStuff.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --log-file="valreport/1_12" ./p
-	cat test/FancyLoops.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/2_12" ./p
-	cat test/MindYourLeft.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/3_12" ./p
-	cat test/UnionStuck.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/4_12" ./p
-	cat test/input_public | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 				--log-file="valreport/5_12" ./p
-	cat test/tocornottoc.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/6_12" ./p
+	cat test/IncreasingStuff.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --log-file="valreport/1_0" ./p
+	cat test/FancyLoops.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/2_0" ./p
+	cat test/MindYourLeft.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/3_0" ./p
+	cat test/UnionStuck.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/4_0" ./p
+	cat test/input_public | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 				--log-file="valreport/5_0" ./p
+	cat test/tocornottoc.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/6_0" ./p
 performances:
-	meld valreport/1_11 valreport/1_12
-	meld valreport/2_11 valreport/2_12
-	meld valreport/3_11 valreport/3_12
-	meld valreport/4_11 valreport/4_12
-	meld valreport/5_11 valreport/5_12
-	meld valreport/6_11 valreport/6_12
+	meld valreport/1_0 valreport/1_1
+	meld valreport/2_0 valreport/2_1
+	meld valreport/3_0 valreport/3_1
+	meld valreport/4_0 valreport/4_1
+	meld valreport/5_0 valreport/5_1
+	meld valreport/6_0 valreport/6_1
 prova:compileval
 	cat test/tocornottoc.txt | valgrind --tool=massif --stacks=yes ./p
 
