@@ -41,6 +41,9 @@ compileval:
 	gcc -g -o p main.c
 compileval1:
 	gcc -g -DEVAL -std=c11 -O2 -pipe -s -o p main.c -lm
+bigResult: aa bb cc dd ee ff
+	cat test/IncreasingStuffResult.txt test/FancyLoopsResult.txt test/MindYourLeftResult.txt test/UnionStuckResult.txt test/DontGetLostResult.txt test/tocornottocResult.txt > bigresult.txt
+	
 valreport: compileval
 	cat test/IncreasingStuff.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --log-file="valreport/1_0" ./p
 	cat test/FancyLoops.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/2_0" ./p

@@ -421,7 +421,6 @@ int createFirstExecution() {
     free(firstExec->inputString); //todo make better
     firstExec->inputString = inputString;
     firstExec->inputStringLen = inputStringLen;
-    printString(firstExec);
 
     executions = firstExec;
     return 1;
