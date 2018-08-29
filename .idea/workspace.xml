@@ -11,7 +11,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6b102b95-c8f0-4ad9-8e3f-dc039254431f" name="Default" comment="" />
+    <list default="true" id="6b102b95-c8f0-4ad9-8e3f-dc039254431f" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -26,8 +28,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="630">
-              <caret line="35" column="23" lean-forward="true" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
+            <state relative-caret-position="302">
+              <caret line="423" lean-forward="true" selection-start-line="423" selection-end-line="423" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -56,6 +58,7 @@
       <find>createNewTransition</find>
       <find>newState</find>
       <find>createNewState</find>
+      <find>printstring</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -244,11 +247,18 @@
       <option name="project" value="LOCAL" />
       <updated>1535540025617</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="updated makefile">
+      <created>1535540445114</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1535540445114</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="158498000" />
+    <option name="totallyTimeSpent" value="160108000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
@@ -308,7 +318,8 @@
     <MESSAGE value="removed blanks line" />
     <MESSAGE value="implemented hash table for transitions with reash" />
     <MESSAGE value="prova" />
-    <option name="LAST_COMMIT_MESSAGE" value="prova" />
+    <MESSAGE value="updated makefile" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated makefile" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -316,11 +327,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/cmake-build-debug/Makefile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-470" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.10.3/CMakeCCompiler.cmake">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1064" />
@@ -619,10 +625,17 @@
         <state relative-caret-position="-155" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="55" column="36" selection-start-line="55" selection-start-column="36" selection-end-line="55" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
-          <caret line="35" column="23" lean-forward="true" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
+        <state relative-caret-position="302">
+          <caret line="423" lean-forward="true" selection-start-line="423" selection-end-line="423" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
