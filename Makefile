@@ -49,12 +49,12 @@ bigcompare:
 	meld test/bigresult.txt test/bigoutput.txt
 	
 valreport: compileval
-	cat test/IncreasingStuff.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --log-file="valreport/1_0" ./p
-	cat test/FancyLoops.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/2_0" ./p
-	cat test/MindYourLeft.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/3_0" ./p
-	cat test/UnionStuck.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/4_0" ./p
-	cat test/input_public | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 				--log-file="valreport/5_0" ./p
-	cat test/tocornottoc.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/6_0" ./p
+	cat test/IncreasingStuff.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all     --log-file="valreport/1_1" ./p
+	cat test/FancyLoops.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/2_1" ./p
+	cat test/MindYourLeft.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/3_1" ./p
+	cat test/UnionStuck.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/4_1" ./p
+	cat test/input_public | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 			--log-file="valreport/5_1" ./p
+	cat test/tocornottoc.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all 		--log-file="valreport/6_1" ./p
 performances:
 	meld valreport/1_0 valreport/1_1
 	meld valreport/2_0 valreport/2_1

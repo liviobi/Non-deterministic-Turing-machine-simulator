@@ -35,7 +35,6 @@ typedef  struct execution_s{
     int cursor;
     int inputStringLen;
     char*inputString;
-    struct execution_s*nextExecution;
 }execution;
 
 typedef  struct container_s{
@@ -150,7 +149,7 @@ int main() {
     }
 
     //printStatesTree(root);
-    //freeStatesTree(root);
+    freeStatesTree(root);
 
     return 0;
 
@@ -345,8 +344,8 @@ void freeAllExecutions() {
 void freeFirstExecution() {
     if(executions != NULL){
         execution* toDelete = executions;
-        executions = toDelete->nextExecution;
         freeExecution(toDelete);
+        executions = NULL;
     }
 }
 
@@ -388,7 +387,6 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
 
 execution *cloneExecution(execution *executionToClone) {
     execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,executionToClone->iteration, executionToClone->inputStringLen);
-    clonedExecution->nextExecution = executionToClone->nextExecution;
     for(int copiedCharIndex = 0; copiedCharIndex<executionToClone->inputStringLen;copiedCharIndex++){
         clonedExecution->inputString[copiedCharIndex] = executionToClone->inputString[copiedCharIndex];
     }
@@ -485,7 +483,6 @@ execution *createNewExecution(state *state, int cursor, int iteration, int input
     newExecution->currentState = state;
     newExecution->cursor = cursor;
     newExecution->iteration = iteration;
-    newExecution->nextExecution = NULL;
     newExecution->inputStringLen = inputStringLen;
     newExecution->inputString = (char*)malloc(newExecution->inputStringLen*sizeof(char));
     return newExecution;
@@ -508,7 +505,6 @@ void setupStates() {
     char written;
     char headShift;
     int nextState;
-    int pos;
 
     //scan tr
     scanf("%s", command);

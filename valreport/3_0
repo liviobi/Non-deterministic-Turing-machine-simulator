@@ -1,0 +1,15 @@
+==457== Memcheck, a memory error detector
+==457== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==457== Using Valgrind-3.12.0.SVN and LibVEX; rerun with -h for copyright info
+==457== Command: ./p
+==457== Parent PID: 455
+==457== 
+==457== 
+==457== HEAP SUMMARY:
+==457==     in use at exit: 0 bytes in 0 blocks
+==457==   total heap usage: 235 allocs, 235 frees, 9,906 bytes allocated
+==457== 
+==457== All heap blocks were freed -- no leaks are possible
+==457== 
+==457== For counts of detected and suppressed errors, rerun with: -v
+==457== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
