@@ -26,8 +26,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7542">
-              <caret line="428" lean-forward="true" selection-start-line="428" selection-end-line="428" />
+            <state relative-caret-position="630">
+              <caret line="35" column="23" lean-forward="true" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -237,11 +237,18 @@
       <option name="project" value="LOCAL" />
       <updated>1535044278823</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="prova">
+      <created>1535540025617</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1535540025617</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="158227000" />
+    <option name="totallyTimeSpent" value="158498000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
@@ -300,7 +307,8 @@
     <MESSAGE value="fixed bug on continous line reading" />
     <MESSAGE value="removed blanks line" />
     <MESSAGE value="implemented hash table for transitions with reash" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented hash table for transitions with reash" />
+    <MESSAGE value="prova" />
+    <option name="LAST_COMMIT_MESSAGE" value="prova" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -613,8 +621,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7542">
-          <caret line="428" lean-forward="true" selection-start-line="428" selection-end-line="428" />
+        <state relative-caret-position="630">
+          <caret line="35" column="23" lean-forward="true" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
