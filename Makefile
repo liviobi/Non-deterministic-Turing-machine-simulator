@@ -1,4 +1,4 @@
-all: a b c d e f
+all: bigresult bigoutput bigcompare
 a: aa
 	meld test/IncreasingStuffResult.txt test/IncreasingStuffOut.txt
 aa: compile
@@ -16,7 +16,7 @@ d: dd
 dd: compile
 	cat test/UnionStuck.txt | ./p > test/UnionStuckResult.txt
 e: ee
-	meld test/DontGetLostResult.txt test/output_public
+	meld test/DontGetLostResult.txt test/output_public.txt
 ee: compile
 	cat test/input_public | ./p > test/DontGetLostResult.txt
 f: ff
@@ -41,8 +41,12 @@ compileval:
 	gcc -g -o p main.c
 compileval1:
 	gcc -g -DEVAL -std=c11 -O2 -pipe -s -o p main.c -lm
-bigResult: aa bb cc dd ee ff
-	cat test/IncreasingStuffResult.txt test/FancyLoopsResult.txt test/MindYourLeftResult.txt test/UnionStuckResult.txt test/DontGetLostResult.txt test/tocornottocResult.txt > bigresult.txt
+bigresult: aa bb cc dd ee ff
+	cat test/IncreasingStuffResult.txt test/FancyLoopsResult.txt test/MindYourLeftResult.txt test/UnionStuckResult.txt test/DontGetLostResult.txt test/tocornottocResult.txt > test/bigresult.txt
+bigoutput:
+	cat test/IncreasingStuffOut.txt test/FancyLoopsOut.txt test/MindYourLeftOut.txt test/UnionStuckOut.txt test/output_public.txt test/tocornottocOut.txt >test/bigoutput.txt
+bigcompare:
+	meld test/bigresult.txt test/bigoutput.txt
 	
 valreport: compileval
 	cat test/IncreasingStuff.txt | valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --log-file="valreport/1_0" ./p
