@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/main.c" line="357" mnemonic="0" />
+  </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
       <config projectName="FSM" targetName="FSM" />
@@ -12,8 +15,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6b102b95-c8f0-4ad9-8e3f-dc039254431f" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/p" beforeDir="false" afterPath="$PROJECT_DIR$/p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DontGetLostResult.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/DontGetLostResult.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/bigresult.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/bigresult.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -29,11 +35,20 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="152" column="4" selection-start-line="152" selection-start-column="4" selection-end-line="152" selection-end-column="4" />
+            <state relative-caret-position="158">
+              <caret line="581" column="40" lean-forward="true" selection-start-line="581" selection-start-column="40" selection-end-line="581" selection-end-column="40" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Makefile" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Makefile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="486">
+              <caret line="63" column="36" lean-forward="true" selection-start-line="63" selection-start-column="36" selection-end-line="63" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -45,7 +60,6 @@
       <find>STARTINLEN</find>
       <find>malloc</find>
       <find>characters</find>
-      <find>makeTransition</find>
       <find>freeStatesBlocks</find>
       <find>setMaxTransitions</find>
       <find>printf</find>
@@ -53,13 +67,22 @@
       <find>createFirstExecution</find>
       <find>searchAddState</find>
       <find>states</find>
-      <find>createNewExecution</find>
       <find>STRINGLEN</find>
       <find>createnewexe</find>
       <find>createNewTransition</find>
       <find>newState</find>
       <find>createNewState</find>
       <find>printstring</find>
+      <find>newExe</find>
+      <find>extractExecutionFromContainer</find>
+      <find>createNewExecution</find>
+      <find>freeAllExecutionContainers</find>
+      <find>makeTransition</find>
+      <find>firstexecutio</find>
+      <find>first</find>
+      <find>executionco</find>
+      <find>newContainer-&gt;nextContainer</find>
+      <find>firstexe</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -69,6 +92,7 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/Makefile" />
         <option value="$PROJECT_DIR$/main.c" />
       </list>
     </option>
@@ -266,7 +290,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="161131000" />
+    <option name="totallyTimeSpent" value="183398000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
@@ -331,7 +355,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="19" />
+      <option name="time" value="32" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -635,15 +659,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Makefile">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="55" column="36" selection-start-line="55" selection-start-column="36" selection-end-line="55" selection-end-column="36" />
+        <state relative-caret-position="486">
+          <caret line="63" column="36" lean-forward="true" selection-start-line="63" selection-start-column="36" selection-end-line="63" selection-end-column="36" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="152" column="4" selection-start-line="152" selection-start-column="4" selection-end-line="152" selection-end-column="4" />
+        <state relative-caret-position="158">
+          <caret line="581" column="40" lean-forward="true" selection-start-line="581" selection-start-column="40" selection-end-line="581" selection-end-column="40" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
