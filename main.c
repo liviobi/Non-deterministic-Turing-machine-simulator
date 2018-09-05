@@ -32,6 +32,7 @@ typedef struct node_s {
 typedef struct differentChar_s{
     int index;
     char charater;
+    int sharing;
 }differentChar;
 
 typedef  struct execution_s{
@@ -54,7 +55,7 @@ typedef struct executionContainer_s{
     struct executionContainer_s*nextContainer;
 }executionContainer;
 
-int maxIterations; //todo see for long or double
+int maxIterations;
 node*root = NULL;
 execution*executions;
 executionContainer*executionsToRun = NULL;
@@ -104,8 +105,6 @@ void freeStatesTree(node *nodeToFree);
 
 execution *createNewExecution(state *state, int cursor, int iteration, int hashLen);
 
-void printString(execution *executiontoPrint);
-
 void addTransitionToTable(state *stateToUpdate, char redChar, transition *transitionToAdd);
 
 int h(char key, int tableDim, int iteration);
@@ -138,7 +137,6 @@ void rehashDiffrentChar(execution *executionToRehash);
 
 void fastInsertCharacterInTable(execution *executionToRehash, differentChar *diffrenCharToAdd);
 
-void printExecution();
 
 //todo check for empty inputs
 int main() {
@@ -243,7 +241,6 @@ void executeAllTransition(char red) {
     }
 
     transitionResult = makeTransition(executions, transitionForRedChar, red);
-   //printExecution();
     if(transitionResult == 0){
         result = 0;
         freeFirstExecution();
@@ -254,42 +251,6 @@ void executeAllTransition(char red) {
         freeAllExecutionContainers();
         return;
     }
-
-}
-
-void printExecution() {
-    for(int i = -10 ; i < inputStringLen+10; i++){
-        int iteration = 0;
-        int value;
-        while (1){
-            value = characterHash(i, executions->hashTableLen,iteration);
-            if(executions->hashTable[value] == NULL){
-                //if I didn't find the character
-                if(i < 0 || i >= inputStringLen){
-                    printf("_");
-                    break;
-                }else{
-                    printf("%c",inputString[i]);
-                    break;
-                    }
-
-            }else if(executions->hashTable[value]->index == i){
-                printf("%c", executions->hashTable[value]->charater);
-                break;
-            }else{
-                iteration++;
-                continue;
-            }
-        }
-
-    }
-    printf("\n");
-    /*for(int i = 0; i< executions->hashTableLen; i++){
-        if(executions->hashTable[i] != NULL){
-            printf("index %d character %c \n", executions->hashTable[i]->index,executions->hashTable[i]->charater);
-        }
-    }*/
-
 
 }
 
@@ -393,7 +354,7 @@ void freeFirstExecution() {
 
 void freeExecution(execution *executionToFree) {
     for(int i = 0; i < executionToFree->hashTableLen; i++){
-        if(executionToFree->hashTable[i] !=NULL){
+        if(executionToFree->hashTable[i] !=NULL && !executionToFree->hashTable[i]->sharing){
             free(executionToFree->hashTable[i]);
         }
     }
@@ -424,7 +385,6 @@ char readFromTape(execution *runningExecution) {
 }
 
 void putDiffrentChar(char charToPut, execution *runningExecution ){
-    //printf(" putting diffrent char %c ", charToPut);
 
     int iteration = 0;
     int value;
@@ -432,18 +392,23 @@ void putDiffrentChar(char charToPut, execution *runningExecution ){
     while (1){
         value = characterHash(runningExecution->cursor, runningExecution->hashTableLen,iteration);
         if(runningExecution->hashTable[value] == NULL){
-            //printf("by creating it");
             runningExecution->hashTable[value] = createNewDiffrentChar(runningExecution->cursor, charToPut);
             runningExecution->tableElements++;
             if(runningExecution->tableElements/runningExecution->hashTableLen>REHASH){
                     rehashDiffrentChar(runningExecution);
                 }
-                //printf("\n");
             return;
         }else if(runningExecution->hashTable[value]->index == runningExecution->cursor){
-                //printf("by updating it");
+            if(!runningExecution->hashTable[value]->sharing){
+               //if it's used only by one
                 runningExecution->hashTable[value]->charater = charToPut;
-           // printf("\n");
+           }else{
+               runningExecution->hashTable[value]->sharing--;
+               //if(!runningExecution->hashTable[value]->sharing){
+               //    free(runningExecution->hashTable[value]);
+               //}
+               runningExecution->hashTable[value] = createNewDiffrentChar(runningExecution->cursor, charToPut);
+           }
             return;
         }else{
             iteration++;
@@ -457,13 +422,13 @@ void putDiffrentChar(char charToPut, execution *runningExecution ){
 
 differentChar *createNewDiffrentChar(int position, char charToPut) {
     differentChar*newDiffrentChar = (differentChar*)malloc(sizeof(differentChar));
+    newDiffrentChar->sharing = 0;
     newDiffrentChar->charater = charToPut;
     newDiffrentChar->index = position;
     return newDiffrentChar;
 }
 
 int makeTransition(execution *executionToUpdate, transition *transitionToApply, char redChar) {
-   // printf("making transition red %c cursor %d\n", redChar,executionToUpdate->cursor);
     executionToUpdate->iteration++;
     if(executionToUpdate->iteration>maxIterations){
         //exceded maximum iterations
@@ -491,7 +456,8 @@ execution *cloneExecution(execution *executionToClone) {
                                                    executionToClone->iteration, executionToClone->hashTableLen);
     for(int i = 0; i<executionToClone->hashTableLen;i++){
         if(executionToClone->hashTable[i] != NULL){
-            clonedExecution->hashTable[i] = createNewDiffrentChar(executionToClone->hashTable[i]->index,executionToClone->hashTable[i]->charater);
+            clonedExecution->hashTable[i] = executionToClone->hashTable[i];
+            clonedExecution->hashTable[i]->sharing++;
         }
     }
     clonedExecution->tableElements = executionToClone->tableElements;
