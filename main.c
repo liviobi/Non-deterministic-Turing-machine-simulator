@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #define FALSE 0
 #define TRUE 1
-#define STARTINGLENGTH 10
-#define REALLOC_INDEX 1.5
+#define STARTINGLENGTH 5
+#define CHAR_REHASH 2
 #define HASHLEN 1
 #define REHASH 0.7
 #define REHASH_INDEX 2
@@ -29,10 +29,18 @@ typedef struct node_s {
     struct node_s*right;
 } node;
 
+typedef struct differentChar_s{
+    int index;
+    char charater;
+}differentChar;
+
 typedef  struct execution_s{
     state*currentState;
     int iteration;
     int cursor;
+    int hashTableLen;
+    int tableElements;
+    differentChar**hashTable;
 }execution;
 
 typedef  struct container_s{
@@ -41,33 +49,18 @@ typedef  struct container_s{
 }container;
 
 typedef struct executionContainer_s{
-    struct modifiedCharacter_s*modifiedCharacters;
-    state*currentState;
-    int iteration;
-    int cursor;
-    int leftBlanks; //todo can delete them to make it faster
-    int rightBlanks;
+    execution*executionToDevelop;
     transition*transitionsToApply;
     struct executionContainer_s*nextContainer;
 }executionContainer;
 
-typedef struct modifiedCharacter_s{
-    int index;
-    char character;
-    struct modifiedCharacter_s*next;
-}modifiedCharacter;
-
-int maxIterations;
+int maxIterations; //todo see for long or double
 node*root = NULL;
 execution*executions;
-executionContainer*containersToRun = NULL;
+executionContainer*executionsToRun = NULL;
 int result = -1;
 char*inputString = NULL;
-int inputStringLen;
-
-int leftBlanksLen = 0;
-int rightBlanksLen = 0;
-char*executionString = NULL;
+int inputStringLen = 0;
 
 void setMaxTransitions();
 
@@ -81,11 +74,7 @@ int createFirstExecution();
 
 execution *cloneExecution(execution *executionToClone);
 
-void reAllocInputStringRight(execution *executionToModify);
-
-void reallocInputStringLeft(execution *executionToModify);
-
-int makeTransition(execution*executionToUpdate,transition*transitionToApply);
+int makeTransition(execution *executionToUpdate, transition *transitionToApply, char redChar);
 
 char readFromTape(execution *runningExecution);
 
@@ -113,7 +102,7 @@ void printStatesTree(node *nodeToPrint);
 
 void freeStatesTree(node *nodeToFree);
 
-execution *createNewExecution(state *state, int cursor, int iteration) ;
+execution *createNewExecution(state *state, int cursor, int iteration, int hashLen);
 
 void printString(execution *executiontoPrint);
 
@@ -129,6 +118,8 @@ void fastInsertInTable(struct container_s **hashTable, int tableDim, container *
 
 void freeNodeTree(node *nodeToFree);
 
+void addNewExecutionContainer(execution *executionToDevelop, struct transition_s *transitionsToApply);
+
 void extractExecution();
 
 void freeAllExecutionContainers();
@@ -139,13 +130,15 @@ int reAllocInputString(int allocMemory);
 
 void cleanInputString();
 
-modifiedCharacter * newModifiedCharacter(int index, char charater);
+int characterHash(int key, int tableDim, int iteration) ;
 
-execution *extractExecutionFromContainer(executionContainer *container);
+differentChar *createNewDiffrentChar(int position, char charToPut);
 
-void addNewExecutionContainer( struct transition_s *transitionsToApply, execution*executionToClone) ;
+void rehashDiffrentChar(execution *executionToRehash);
 
-void freeModifiedCharacters(struct modifiedCharacter_s *modifiedCharacter);
+void fastInsertCharacterInTable(execution *executionToRehash, differentChar *diffrenCharToAdd);
+
+void printExecution();
 
 //todo check for empty inputs
 int main() {
@@ -170,7 +163,6 @@ int main() {
     //printStatesTree(root);
     freeStatesTree(root);
     free(inputString);
-    free(executionString);
 
     return 0;
 
@@ -202,7 +194,6 @@ void freeStatesTree(node *nodeToFree) {
                 temp = transitionToFree->nextTransition;
                 free(transitionToFree);
                 transitionToFree = temp;
-
             }
             free(nodeToFree->stateInNode->hashTable[i]);
         }
@@ -246,11 +237,13 @@ void executeAllTransition(char red) {
     }
     //if I have more than one transition
     if(transitionForRedChar->nextTransition != NULL){
-        //todo posso farlo più veloce se controllo se ho solo due transizioni faccio due esecuzione senza fare il container?
-        addNewExecutionContainer(transitionForRedChar->nextTransition,executions);
+        //todo posso farlo più veloce se controllo se ho solo due transizioni faccio due esecuzione senza fare il container
+        execution*clonedExecution = cloneExecution(executions);
+        addNewExecutionContainer(clonedExecution,transitionForRedChar->nextTransition);
     }
 
-    transitionResult = makeTransition(executions,transitionForRedChar);
+    transitionResult = makeTransition(executions, transitionForRedChar, red);
+   //printExecution();
     if(transitionResult == 0){
         result = 0;
         freeFirstExecution();
@@ -264,25 +257,63 @@ void executeAllTransition(char red) {
 
 }
 
+void printExecution() {
+    for(int i = -10 ; i < inputStringLen+10; i++){
+        int iteration = 0;
+        int value;
+        while (1){
+            value = characterHash(i, executions->hashTableLen,iteration);
+            if(executions->hashTable[value] == NULL){
+                //if I didn't find the character
+                if(i < 0 || i >= inputStringLen){
+                    printf("_");
+                    break;
+                }else{
+                    printf("%c",inputString[i]);
+                    break;
+                    }
+
+            }else if(executions->hashTable[value]->index == i){
+                printf("%c", executions->hashTable[value]->charater);
+                break;
+            }else{
+                iteration++;
+                continue;
+            }
+        }
+
+    }
+    printf("\n");
+    /*for(int i = 0; i< executions->hashTableLen; i++){
+        if(executions->hashTable[i] != NULL){
+            printf("index %d character %c \n", executions->hashTable[i]->index,executions->hashTable[i]->charater);
+        }
+    }*/
+
+
+}
+
 void extractExecution() {
     transition*transitionToApply;
-    if(containersToRun == NULL){
+    if(executionsToRun == NULL){
         return;
     }
     //only one transition left
     while (executions == NULL){
-        if(containersToRun->transitionsToApply->nextTransition == NULL){
-            executions = extractExecutionFromContainer(containersToRun);
-            transitionToApply = containersToRun->transitionsToApply;
+        if(executionsToRun->transitionsToApply->nextTransition == NULL){
+            executions = executionsToRun->executionToDevelop;
+            transitionToApply = executionsToRun->transitionsToApply;
             //deleting container with no transitions in it
-            freeFirstExecutionContainer();
+            executionContainer*toDelete = executionsToRun;
+            executionsToRun = executionsToRun->nextContainer;
+            free(toDelete);
         }else{
-            executions = extractExecutionFromContainer(containersToRun);
-            transitionToApply = containersToRun->transitionsToApply;
-            containersToRun->transitionsToApply = containersToRun->transitionsToApply->nextTransition;
+            executions = cloneExecution(executionsToRun->executionToDevelop);
+            transitionToApply = executionsToRun->transitionsToApply;
+            executionsToRun->transitionsToApply = executionsToRun->transitionsToApply->nextTransition;
         }
 
-        int transitionResult = makeTransition(executions,transitionToApply); //todo extract method
+        int transitionResult = makeTransition(executions, transitionToApply, 0); //todo extract method
         if(transitionResult == 0){
             result = 0;
             freeFirstExecution();
@@ -293,149 +324,35 @@ void extractExecution() {
             return;
         }
         //if there are no more containers
-        if(containersToRun == NULL){
+        if(executionsToRun == NULL){
             return;
         }
     }
 
 }
 
-execution *extractExecutionFromContainer(executionContainer *container) {
-    //todo can avoid to free
-    if(executionString != NULL){
-        free(executionString);
-    }
-
-    executionString = (char*)malloc(sizeof(char)*(inputStringLen+container->rightBlanks+container->leftBlanks));
-    leftBlanksLen = container->leftBlanks;
-    rightBlanksLen = container -> rightBlanks;
-    int i;
-    modifiedCharacter *characterDifferentFromInput = container->modifiedCharacters;
-    for (i = 0; i < leftBlanksLen; i++) {
-        if(characterDifferentFromInput != NULL && i == characterDifferentFromInput->index){
-            executionString[i] = characterDifferentFromInput->character;
-            characterDifferentFromInput = characterDifferentFromInput->next;
-        }else{
-            executionString[i] = '_';
-        }
-    }
-
-    for(; i< leftBlanksLen + inputStringLen; i++){
-        if(characterDifferentFromInput != NULL ) {
-            if (i == characterDifferentFromInput->index) {
-            executionString[i] = characterDifferentFromInput->character;
-            characterDifferentFromInput = characterDifferentFromInput->next;
-            }
-        }else{
-            executionString[i] = inputString[i + leftBlanksLen];
-        }
-    }
-
-    for(; i< leftBlanksLen + inputStringLen + rightBlanksLen; i++){
-        if(characterDifferentFromInput != NULL && i == characterDifferentFromInput->index){
-            executionString[i] = characterDifferentFromInput->character;
-            characterDifferentFromInput = characterDifferentFromInput->next;
-        }else{
-            executionString[i] = inputString[i + leftBlanksLen + rightBlanksLen];
-        }
-    }
-
-    return createNewExecution(container->currentState,container->cursor,container->iteration);
-
-
-
-}
-
 void freeAllExecutionContainers() {
-    while(containersToRun != NULL){
+    while(executionsToRun != NULL){
         freeFirstExecutionContainer();
     }
 
 }
 
 void freeFirstExecutionContainer() {
-    if(containersToRun != NULL){
-        freeModifiedCharacters(containersToRun->modifiedCharacters);
-        executionContainer* toDelete = containersToRun;
-        containersToRun = toDelete->nextContainer;
+    if(executionsToRun != NULL){
+        executionContainer* toDelete = executionsToRun;
+        executionsToRun = toDelete->nextContainer;
+        freeExecution(toDelete->executionToDevelop);
         free(toDelete);
     }
 }
 
-void freeModifiedCharacters(struct modifiedCharacter_s *toDelete) {
-    while (toDelete != NULL){
-        struct modifiedCharacter_s *temp = toDelete->next;
-        free(toDelete);
-        toDelete = temp;
-    }
-
-}
-
-void addNewExecutionContainer( struct transition_s *transitionsToApply, execution*executionToClone) {
+void addNewExecutionContainer(execution *executionToDevelop, struct transition_s *transitionsToApply) {
     executionContainer*newContainer = (executionContainer*)malloc(sizeof(executionContainer));
-    newContainer->iteration = executionToClone->iteration;
-    newContainer->cursor = executionToClone->cursor;
-    newContainer->currentState = executionToClone->currentState;
-    newContainer->leftBlanks = leftBlanksLen;
-    newContainer->rightBlanks = rightBlanksLen;
+    newContainer->executionToDevelop = executionToDevelop;
     newContainer->transitionsToApply = transitionsToApply;
-    newContainer->nextContainer = containersToRun;
-    containersToRun = newContainer;
-    newContainer->modifiedCharacters = NULL;
-
-    modifiedCharacter*newModifiedChar = NULL;
-    int i;
-    for(i = 0; i < leftBlanksLen; i++){
-        if(executionString[i] != '_'){
-            if(newModifiedChar == NULL){
-                newModifiedChar = newModifiedCharacter(i,executionString[i]);
-                newContainer->modifiedCharacters = newModifiedChar;
-            }else{
-                newModifiedChar->next = newModifiedCharacter(i,executionString[i]);
-                newModifiedChar = newModifiedChar->next;
-            }
-        }
-    }
-
-    int index;
-    for(i = 0; i < inputStringLen; i++){
-        index = i + leftBlanksLen;
-        if(executionString[index] != inputString[i]){
-            if(newModifiedChar == NULL){
-                newModifiedChar = newModifiedCharacter(index,executionString[index]);
-                newContainer->modifiedCharacters = newModifiedChar;
-            }else{
-                newModifiedChar->next = newModifiedCharacter(index,executionString[index]);
-                newModifiedChar = newModifiedChar->next;
-            }
-        }
-    }
-
-    for(i = 0; i < rightBlanksLen; i++){
-        index = i + leftBlanksLen + inputStringLen;
-        if(executionString[index] != '_'){
-            if(newModifiedChar == NULL){
-                newModifiedChar = newModifiedCharacter(index,executionString[index]);
-                newContainer->modifiedCharacters = newModifiedChar;
-            }else{
-                newModifiedChar->next = newModifiedCharacter(index,executionString[index]);
-                newModifiedChar = newModifiedChar->next;
-            }
-        }
-    }
-
-    if(newModifiedChar != NULL){
-        newModifiedChar->next = NULL;
-    }
-}
-
-modifiedCharacter * newModifiedCharacter(int index, char character) {
-    modifiedCharacter*newContainer = (modifiedCharacter*)malloc(sizeof(modifiedCharacter));
-    newContainer->character = character;
-    newContainer->index = index;
-    newContainer->next = NULL;
-    return newContainer;
-
+    newContainer->nextContainer = executionsToRun;
+    executionsToRun = newContainer;
 }
 
 transition *getTransition(state *stateToSearch, char redChar) {
@@ -475,14 +392,78 @@ void freeFirstExecution() {
 }
 
 void freeExecution(execution *executionToFree) {
+    for(int i = 0; i < executionToFree->hashTableLen; i++){
+        if(executionToFree->hashTable[i] !=NULL){
+            free(executionToFree->hashTable[i]);
+        }
+    }
+    free(executionToFree->hashTable);
     free(executionToFree);
 }
 
-char readFromTape(execution *runningExecution) { //todo see if i must delete it
-    return executionString[runningExecution->cursor];
+char readFromTape(execution *runningExecution) {
+    int iteration = 0;
+    int value;
+    while (1){
+        value = characterHash(runningExecution->cursor, runningExecution->hashTableLen,iteration);
+        if(runningExecution->hashTable[value] == NULL){
+            //if I didn't find the character
+            if(runningExecution->cursor < 0 || runningExecution->cursor >= inputStringLen){
+                return '_';
+            }else{
+                return inputString[runningExecution->cursor];
+            }
+
+        }else if(runningExecution->hashTable[value]->index == runningExecution->cursor){
+            return runningExecution->hashTable[value]->charater; //todo return the struct to avoid searching it again
+        }else{
+            iteration++;
+            continue;
+        }
+    }
 }
 
-int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
+void putDiffrentChar(char charToPut, execution *runningExecution ){
+    //printf(" putting diffrent char %c ", charToPut);
+
+    int iteration = 0;
+    int value;
+
+    while (1){
+        value = characterHash(runningExecution->cursor, runningExecution->hashTableLen,iteration);
+        if(runningExecution->hashTable[value] == NULL){
+            //printf("by creating it");
+            runningExecution->hashTable[value] = createNewDiffrentChar(runningExecution->cursor, charToPut);
+            runningExecution->tableElements++;
+            if(runningExecution->tableElements/runningExecution->hashTableLen>REHASH){
+                    rehashDiffrentChar(runningExecution);
+                }
+                //printf("\n");
+            return;
+        }else if(runningExecution->hashTable[value]->index == runningExecution->cursor){
+                //printf("by updating it");
+                runningExecution->hashTable[value]->charater = charToPut;
+           // printf("\n");
+            return;
+        }else{
+            iteration++;
+            continue;
+        }
+    }
+
+
+}
+
+
+differentChar *createNewDiffrentChar(int position, char charToPut) {
+    differentChar*newDiffrentChar = (differentChar*)malloc(sizeof(differentChar));
+    newDiffrentChar->charater = charToPut;
+    newDiffrentChar->index = position;
+    return newDiffrentChar;
+}
+
+int makeTransition(execution *executionToUpdate, transition *transitionToApply, char redChar) {
+   // printf("making transition red %c cursor %d\n", redChar,executionToUpdate->cursor);
     executionToUpdate->iteration++;
     if(executionToUpdate->iteration>maxIterations){
         //exceded maximum iterations
@@ -494,19 +475,27 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
         return 1;
     }
 
-    executionString[executionToUpdate->cursor] = transitionToApply->written;
+    if(redChar != transitionToApply->written){
+        putDiffrentChar(transitionToApply->written,executionToUpdate);
+    }
     if(transitionToApply->headShift =='L'){
         executionToUpdate->cursor--;
-        if(executionToUpdate->cursor<0){
-            reallocInputStringLeft(executionToUpdate);
-        }
     }else if(transitionToApply->headShift == 'R'){
         executionToUpdate->cursor++;
-        if(executionToUpdate->cursor==leftBlanksLen+inputStringLen+rightBlanksLen){ //todo can make as an index instead of length
-            reAllocInputStringRight(executionToUpdate);
-        }
     }
     return -1;
+}
+
+execution *cloneExecution(execution *executionToClone) {
+    execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,
+                                                   executionToClone->iteration, executionToClone->hashTableLen);
+    for(int i = 0; i<executionToClone->hashTableLen;i++){
+        if(executionToClone->hashTable[i] != NULL){
+            clonedExecution->hashTable[i] = createNewDiffrentChar(executionToClone->hashTable[i]->index,executionToClone->hashTable[i]->charater);
+        }
+    }
+    clonedExecution->tableElements = executionToClone->tableElements;
+    return clonedExecution;
 }
 
 int createFirstExecution() {
@@ -516,11 +505,11 @@ int createFirstExecution() {
     if(end == EOF){
         return 0;
     }
-    if(inputString !=NULL){
-        free(inputString);
-    }
     int allocatedMemory;
     allocatedMemory = STARTINGLENGTH;
+    if(inputStringLen > 0){
+        free(inputString);
+    }
     inputString = (char*)malloc(sizeof(char)*allocatedMemory);
 
     for(inputStringLen = 0;c != '\n' && end != EOF;inputStringLen++){
@@ -533,23 +522,9 @@ int createFirstExecution() {
         end = scanf("%c", &c);
     }
     cleanInputString();
-
     state*stateZero = searchAddState(root,0);
-    execution*firstExec = (execution*)malloc(sizeof(execution));
-    firstExec->currentState = stateZero;
-    firstExec->cursor = 0;
-    firstExec->iteration = 0;
-    if(executionString != NULL) {
-        free(executionString);
-    }
-    executionString = (char *) malloc(sizeof(char) * inputStringLen);
-    for(int i = 0; i < inputStringLen; i++){
-       executionString[i] = inputString[i];
-    }
+    execution*firstExec = createNewExecution(stateZero, 0, 0,STARTINGLENGTH);
 
-    containersToRun = NULL;
-    leftBlanksLen = 0;
-    rightBlanksLen = 0;
     executions = firstExec;
     return 1;
 }
@@ -575,53 +550,18 @@ int reAllocInputString(int allocMemory) {
     return  allocMemory;
 }
 
-void reAllocInputStringRight(execution *executionToModify) {
-    char*oldInputString = executionString;
-    int oldInputStringLen = leftBlanksLen+inputStringLen+rightBlanksLen;
-    if(rightBlanksLen == 0){
-        rightBlanksLen = STARTINGLENGTH;
-    }else{
-        rightBlanksLen = leftBlanksLen*REALLOC_INDEX;
-    }
-    int newInputStringLen = leftBlanksLen+inputStringLen+rightBlanksLen;
-    executionString = (char*)malloc((newInputStringLen)*sizeof(char));
-    for(int copiedCharIndex = 0;copiedCharIndex<oldInputStringLen;copiedCharIndex++){
-        executionString[copiedCharIndex] = oldInputString[copiedCharIndex];
-    }
-    for(int blankIndex = oldInputStringLen;blankIndex<newInputStringLen;blankIndex++){
-        executionString[blankIndex] = '_';
-    }
-    free(oldInputString);
-}
 
-void reallocInputStringLeft(execution *executionToModify) {
-    char*oldInputString = executionString;
-    int oldInputStringLen = leftBlanksLen+inputStringLen+rightBlanksLen;
-    if(leftBlanksLen == 0){
-        leftBlanksLen = STARTINGLENGTH;
-    }else{
-        leftBlanksLen = leftBlanksLen*REALLOC_INDEX;
-    }
-    int newInputStringLen = leftBlanksLen+inputStringLen+rightBlanksLen;
-    executionString = (char*)malloc((newInputStringLen)*sizeof(char));
-
-    int blanksEnd = newInputStringLen - oldInputStringLen;
-    for(int blankIndex = 0; blankIndex < blanksEnd; blankIndex++){
-        executionString[blankIndex] = '_';
-    }
-
-    for(int copiedCharIndex = blanksEnd; copiedCharIndex < newInputStringLen; copiedCharIndex++){
-        executionString[copiedCharIndex] = oldInputString[copiedCharIndex - blanksEnd];
-    }
-    free(oldInputString);
-    executionToModify->cursor = newInputStringLen - oldInputStringLen -1;
-}
-
-execution *createNewExecution(state *state, int cursor, int iteration) {
+execution *createNewExecution(state *state, int cursor, int iteration, int hashLen) {
     execution*newExecution = (execution*)malloc(sizeof(execution));
     newExecution->currentState = state;
     newExecution->cursor = cursor;
     newExecution->iteration = iteration;
+    newExecution->tableElements = 0;
+    newExecution->hashTableLen = hashLen;
+    newExecution->hashTable = (differentChar**)malloc(sizeof(differentChar*)*hashLen);
+    for(int i = 0; i< hashLen; i++){ //todo add only in create first exec
+        newExecution->hashTable[i] = NULL;
+    }
     return newExecution;
 }
 
@@ -700,6 +640,52 @@ void addTransitionToTable(state *stateToUpdate, char redChar, transition *transi
     }
 }
 
+int h(char key, int tableDim, int iteration) {
+    return ((int)key+iteration)%tableDim;
+}
+int characterHash(int key, int tableDim, int iteration) {
+    if(key < 0){
+        return ((key*-1)+iteration)%tableDim;
+    } else{
+        return (key+iteration)%tableDim;
+    }
+}
+
+void rehashDiffrentChar(execution *executionToRehash) {
+    int oldTableDim = executionToRehash->hashTableLen;
+    differentChar **oldTable = executionToRehash->hashTable;
+    int newTableDim = executionToRehash->hashTableLen*CHAR_REHASH;
+    executionToRehash->hashTable = (differentChar **)malloc(sizeof(differentChar *)*newTableDim);
+    executionToRehash->hashTableLen = newTableDim;
+    //initialize the newly created table
+    for(int i = 0; i<newTableDim;i++){
+        executionToRehash->hashTable[i] = NULL;
+    }
+
+    for(int i = 0; i<oldTableDim;i++){
+        if(oldTable[i] != NULL){
+            fastInsertCharacterInTable(executionToRehash, oldTable[i]);
+        }
+    }
+    free(oldTable);
+}
+
+void fastInsertCharacterInTable(execution *executionToRehash, differentChar *diffrenCharToAdd) {
+    int value;
+    int iteration = 0;
+    while(1) {
+        value = characterHash(diffrenCharToAdd->index, executionToRehash->hashTableLen, iteration);
+        if(executionToRehash->hashTable[value] == NULL){
+            executionToRehash->hashTable[value] = diffrenCharToAdd;
+            break;
+        }else{
+            iteration++;
+            continue;
+        }
+    }
+
+}
+
 void rehash(state *stateToUpdate) {
     int oldTableDim = stateToUpdate->tableDim;
     container**oldTable = stateToUpdate->hashTable;
@@ -732,9 +718,7 @@ void fastInsertInTable(struct container_s **hashTable, int tableDim, container *
     }
 }
 
-int h(char key, int tableDim, int iteration) {
-    return ((int)key+iteration)%tableDim;
-}
+
 
 state *searchAddState(node*fatherNode, int stateToFind) {
     if(fatherNode->stateIndex == stateToFind){

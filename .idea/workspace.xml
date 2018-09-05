@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/main.c" line="357" mnemonic="0" />
+    <bookmark url="file://$PROJECT_DIR$/main.c" line="435" mnemonic="0" />
   </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
@@ -19,6 +19,7 @@
       <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/p" beforeDir="false" afterPath="$PROJECT_DIR$/p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/DontGetLostResult.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/DontGetLostResult.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/IncreasingStuff.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/IncreasingStuff.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/bigresult.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/bigresult.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -35,8 +36,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="158">
-              <caret line="581" column="40" lean-forward="true" selection-start-line="581" selection-start-column="40" selection-end-line="581" selection-end-column="40" />
+            <state relative-caret-position="72">
+              <caret line="4" column="24" selection-start-line="4" selection-start-column="24" selection-end-line="4" selection-end-column="24" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -48,7 +49,7 @@
         <entry file="file://$PROJECT_DIR$/Makefile">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="486">
-              <caret line="63" column="36" lean-forward="true" selection-start-line="63" selection-start-column="36" selection-end-line="63" selection-end-column="36" />
+              <caret line="63" column="36" selection-start-line="63" selection-start-column="36" selection-end-line="63" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -57,25 +58,7 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>STARTINLEN</find>
-      <find>malloc</find>
-      <find>characters</find>
-      <find>freeStatesBlocks</find>
-      <find>setMaxTransitions</find>
-      <find>printf</find>
-      <find>95</find>
-      <find>createFirstExecution</find>
-      <find>searchAddState</find>
-      <find>states</find>
-      <find>STRINGLEN</find>
-      <find>createnewexe</find>
-      <find>createNewTransition</find>
-      <find>newState</find>
-      <find>createNewState</find>
-      <find>printstring</find>
-      <find>newExe</find>
       <find>extractExecutionFromContainer</find>
-      <find>createNewExecution</find>
       <find>freeAllExecutionContainers</find>
       <find>makeTransition</find>
       <find>firstexecutio</find>
@@ -83,6 +66,28 @@
       <find>executionco</find>
       <find>newContainer-&gt;nextContainer</find>
       <find>firstexe</find>
+      <find>realloc</find>
+      <find>inputStringLen</find>
+      <find>createfirste</find>
+      <find>createfirst</find>
+      <find>h</find>
+      <find>rehash</find>
+      <find>hash</find>
+      <find>CRE</find>
+      <find>reha</find>
+      <find>rehashDiffrentChar</find>
+      <find>clone</find>
+      <find>REHASH</find>
+      <find>characterHash</find>
+      <find>createNewExecution</find>
+      <find>makin</find>
+      <find>readFromTape</find>
+      <find>addNewExecutionContainer</find>
+      <find>printexe</find>
+      <find>iteration = 0</find>
+      <find>iteration =</find>
+      <find>!</find>
+      <find>printExecution</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -286,26 +291,33 @@
       <option name="project" value="LOCAL" />
       <updated>1535543253056</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="TO FIX implmented execution container with no string on it">
+      <created>1535826594967</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1535826594967</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="183398000" />
+    <option name="totallyTimeSpent" value="218677000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.24596465" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Messages" order="8" weight="0.32831326" />
       <window_info anchor="bottom" id="CMake" order="8" />
       <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" weight="0.3298193" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3298193" />
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.29668674" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.24596465" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3298193" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="3" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3990964" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.29668674" />
@@ -320,6 +332,7 @@
       <window_info anchor="bottom" id="CMake" order="8" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3990964" />
+      <window_info anchor="right" x="0" y="0" width="275" height="580" id="Documentation" side_tool="true" weight="0.3289777" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -351,7 +364,8 @@
     <MESSAGE value="implemented hash table for transitions with reash" />
     <MESSAGE value="prova" />
     <MESSAGE value="updated makefile" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated makefile" />
+    <MESSAGE value="TO FIX implmented execution container with no string on it" />
+    <option name="LAST_COMMIT_MESSAGE" value="TO FIX implmented execution container with no string on it" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -660,14 +674,14 @@
     <entry file="file://$PROJECT_DIR$/Makefile">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="486">
-          <caret line="63" column="36" lean-forward="true" selection-start-line="63" selection-start-column="36" selection-end-line="63" selection-end-column="36" />
+          <caret line="63" column="36" selection-start-line="63" selection-start-column="36" selection-end-line="63" selection-end-column="36" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="581" column="40" lean-forward="true" selection-start-line="581" selection-start-column="40" selection-end-line="581" selection-end-column="40" />
+        <state relative-caret-position="72">
+          <caret line="4" column="24" selection-start-line="4" selection-start-column="24" selection-end-line="4" selection-end-column="24" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
