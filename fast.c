@@ -11,6 +11,7 @@
 typedef struct transition_s{
     char written;
     char headShift;
+    int infinite;
     struct state_s*nextState;
     struct transition_s*nextTransition;
 }transition;
@@ -93,8 +94,6 @@ node *createNewNode(int stateIndex);
 
 state *createNewState() ;
 
-transition *createNewTransition(char written, char headShift, state*nextState) ;
-
 void printStatesTree(node *nodeToPrint);
 
 void freeStatesTree(node *nodeToFree);
@@ -122,6 +121,8 @@ void extractExecution();
 void freeAllExecutionContainers();
 
 void freeFirstExecutionContainer();
+
+transition*createNewTransition(char written, char headShift, state*nextState, int infinite);
 
 //todo check for empty inputs
 int main() {
@@ -355,7 +356,7 @@ char readFromTape(execution *runningExecution) { //todo see if i must delete it
 
 int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     executionToUpdate->iteration++;
-    if(executionToUpdate->iteration>maxIterations){
+    if(executionToUpdate->iteration == maxIterations){
         //exceded maximum iterations
         return 0;
     }
@@ -363,6 +364,11 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     if(executionToUpdate->currentState->acceptState){
         //found final currentState
         return 1;
+    }
+
+    if(transitionToApply->infinite){
+        //will proceed till the end of transitions
+        return 0;
     }
 
     executionToUpdate->inputString[executionToUpdate->cursor] = transitionToApply->written;
@@ -481,7 +487,6 @@ void setupStates() {
     char written;
     char headShift;
     int nextState;
-    int pos;
 
     //scan tr
     scanf("%s", command);
@@ -489,17 +494,24 @@ void setupStates() {
     if(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5){
         setupRoot(currentState);
         state*followingState = searchAddState(root,nextState);
-        transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
+        transition *newTransition = createNewTransition(written, headShift, followingState,0); //todo check if transition isn't already there
         addTransitionToTable(root->stateInNode,red,newTransition);
     }else{
         return;
     }
 
     while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5) {
-        state*followingState = searchAddState(root,nextState);
-        state *stateToAddTransition = searchAddState(root,currentState);
-        transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
-        addTransitionToTable(stateToAddTransition,red,newTransition);
+        if(red == written && currentState == nextState && headShift == 'S'){
+            state*followingState = searchAddState(root,nextState);
+            state *stateToAddTransition = searchAddState(root,currentState);
+            transition *newTransition = createNewTransition(written, headShift, followingState,1); //todo check if transition isn't already there
+            addTransitionToTable(stateToAddTransition,red,newTransition);
+        }else{
+            state*followingState = searchAddState(root,nextState);
+            state *stateToAddTransition = searchAddState(root,currentState);
+            transition *newTransition = createNewTransition(written, headShift, followingState,0); //todo check if transition isn't already there
+            addTransitionToTable(stateToAddTransition,red,newTransition);
+        }
     }
 }
 
@@ -616,12 +628,13 @@ state *createNewState() {
     return newState;
 }
 
-transition *createNewTransition(char written, char headShift, state*nextState) {
+transition *createNewTransition(char written, char headShift, state*nextState, int infinite) {
     transition* newTransition = (transition *)malloc(sizeof(transition));
     newTransition->nextState = nextState;
     newTransition->written = written;
     newTransition->headShift = headShift;
     newTransition->nextTransition = NULL;
+    newTransition->infinite = infinite;
     return newTransition;
 }
 

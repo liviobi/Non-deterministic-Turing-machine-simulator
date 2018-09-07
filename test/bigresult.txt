@@ -34,55 +34,71 @@ U
 U
 0
 1
+its infini
 U
 0
+its infini
 U
 1
-0
-0
-0
-1
-U
-0
-U
-0
-U
-0
 0
 0
 0
 1
+its infini
+U
+0
+its infini
+U
+0
+its infini
+U
+0
+0
+0
+0
+1
 0
 1
 0
 0
 0
 0
-U
-1
-0
-1
-U
-1
-U
-0
-U
-0
-U
-0
-U
-1
-U
-0
+its infini
 U
 1
 0
 1
+its infini
+U
+1
+its infini
 U
 0
+its infini
+U
+0
+its infini
+U
+0
+its infini
+U
+1
+its infini
+U
+0
+its infini
+U
+1
+0
+1
+its infini
+U
+0
+its infini
 U
 0
 0
+its infini
 U
 1
 1
