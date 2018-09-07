@@ -43,20 +43,11 @@ typedef  struct container_s{
     transition*transitionForChar;
 }container;
 
-typedef struct indetNode_s{
-    state*currentState;
-    int iteration;
-    int cursor;
-    int transition;
-    struct indetNode_s*next;
-}indetNode;
-
 int maxIterations; //todo see for long or double
 node*root = NULL;
 execution*executions;
+execution*executionsTail;
 int result = -1;
-char*inputString;
-indetNode*head = NULL;
 
 void setMaxTransitions();
 
@@ -68,19 +59,19 @@ void freeTransition(transition*transitionToFree);
 
 int createFirstExecution();
 
-execution *cloneExecution(execution *executionToClone);
+execution *cloneExecutionBreadth(execution *executionToClone);
 
 void reallocInputStringRight(execution *executionToModify);
 
 void reallocInputStringLeft(execution *executionToModify);
 
-int makeTransition(execution*executionToUpdate,transition*transitionToApply);
+int makeTransitionBreadth(execution *executionToUpdate, transition *transitionToApply);
 
 char readFromTape(execution *runningExecution);
 
 void freeExecution(execution *executionToFree);
 
-void executeAllTransition(char red);
+void executeAllTransitionsBreadth(char red);
 
 void freeAllExecutions();
 
@@ -106,15 +97,15 @@ execution *createNewExecution(state *state, int cursor, int iteration, int input
 
 void printString(execution *executiontoPrint);
 
-void addTransitionToTable(state *stateToUpdate, char redChar, transition *transitionToAdd);
+void addTransitionToTable(state *stateToUpdate, char redChar, transition *transitonToAdd);
 
 int h(char key, int tableDim, int iteration);
 
-transition *getTransition(state *stateToSearch, char redChar);
+transition *getTransition(state *hashTable, char redChar);
 
 void rehash(state *stateToUpdate);
 
-void fastInsertInTable(struct container_s **hashTable, int tableDim, container *containerToInsert);
+void fastInsertInTable(struct container_s **hashTable, int containerToInsert, container *pS);
 
 void freeNodeTree(node *nodeToFree);
 
@@ -132,7 +123,7 @@ int main() {
     while(createFirstExecution() == 1) {
         while (executions != NULL) {
             char redChar = readFromTape(executions);
-            executeAllTransition(redChar);
+            executeAllTransitionsBreadth(redChar);
         }
         printResult();
         result = -1;
@@ -204,31 +195,47 @@ void printResult() {
     }
 }
 
-void executeAllTransition(char red) {
+void executeAllTransitionsBreadth(char red) {
     transition* transitionForRedChar = getTransition(executions->currentState,red);
     int transitionResult;
 
     if(transitionForRedChar == NULL){
         freeFirstExecution();
-        getNewExecution();
         return;
     }
-    //if I have more than one transition
-    if(transitionForRedChar->nextTransition != NULL){
-        searchExecutionContainer();
-    }
+    while(transitionForRedChar != NULL){
+        //whenever I have more than one transition I clone the fsm and execute it
+        if(transitionForRedChar->nextTransition != NULL){
+            execution*clonedExecution = cloneExecutionBreadth(executions);
+            transitionResult = makeTransitionBreadth(clonedExecution, transitionForRedChar);
+            if(transitionResult == 0){
+                result = 0;
+                freeExecution(clonedExecution);
+            }else if(transitionResult == 1){
+                result = 1;
+                freeAllExecutions();
+                return;
+            }else{
+                executionsTail->nextExecution = clonedExecution;
+                executionsTail = clonedExecution;
+            }
+        }else{
+            //if I reach the last transition I don't clone it anymore I just update it
+            transitionResult = makeTransitionBreadth(executions, transitionForRedChar);
+            if(transitionResult == 0){
+                result = 0;
+                execution*execToDelete = executions;
+                executions = executions->nextExecution;
+                freeExecution(execToDelete);
+            }else if(transitionResult == 1){
+                result = 1;
+                freeAllExecutions();
+                return;
+            }
+        }
 
-    transitionResult = makeTransition(executions,transitionForRedChar);
-    if(transitionResult == 0){
-        result = 0;
-        freeFirstExecution();
-        getNewExecution();
-    }else if(transitionResult == 1){
-        result = 1;
-        freeAllExecutions();
-        return;
+        transitionForRedChar = transitionForRedChar->nextTransition;
     }
-
 }
 
 transition *getTransition(state *stateToSearch, char redChar) {
@@ -283,7 +290,7 @@ char readFromTape(execution *runningExecution) { //todo see if i must delete it
     return runningExecution->inputString[runningExecution->cursor];
 }
 
-int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
+int makeTransitionBreadth(execution *executionToUpdate, transition *transitionToApply) {
     executionToUpdate->iteration++;
     if(executionToUpdate->iteration>maxIterations){
         //exceded maximum iterations
@@ -310,9 +317,9 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     return -1;
 }
 
-execution *cloneExecution(execution *executionToClone) {
+execution *cloneExecutionBreadth(execution *executionToClone) {
     execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,executionToClone->iteration, executionToClone->inputStringLen);
-    clonedExecution->nextExecution = executionToClone->nextExecution;
+    clonedExecution->nextExecution = NULL;
     for(int copiedCharIndex = 0; copiedCharIndex<executionToClone->inputStringLen;copiedCharIndex++){
         clonedExecution->inputString[copiedCharIndex] = executionToClone->inputString[copiedCharIndex];
     }
@@ -344,20 +351,14 @@ int createFirstExecution() {
         firstExec->inputString[i] = '_';
     }
 
-    inputString = (char*)malloc(sizeof(char)*firstExec->inputStringLen);
-    for(i = 0;i< firstExec->inputStringLen; i++){
-        inputString[i] = firstExec->inputString[i];
-    }
-
     executions = firstExec;
+    executionsTail = firstExec;
     return 1;
 }
 
 void reallocInputStringRight(execution *executionToModify) {
     char*oldInputString = executionToModify ->inputString;
-    //printf(" old = %d ",executionToModify->inputStringLen);
     int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
-    //printf("new = %d\n",newInputStringLen);
     executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
     for(int copiedCharIndex = 0;copiedCharIndex<executionToModify->inputStringLen;copiedCharIndex++){
         executionToModify->inputString[copiedCharIndex] = oldInputString[copiedCharIndex];
@@ -371,8 +372,8 @@ void reallocInputStringRight(execution *executionToModify) {
 
 void reallocInputStringLeft(execution *executionToModify) {
     char*oldInputString = executionToModify ->inputString;
-    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     int oldInputStringLen = executionToModify->inputStringLen;
+    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
 
     int blanksEnd = newInputStringLen - oldInputStringLen;
@@ -431,10 +432,17 @@ void setupStates() {
     }
 
     while(scanf("%d %c %c %c %d",&currentState,&red,&written,&headShift,&nextState) == 5) {
-        state*followingState = searchAddState(root,nextState);
-        state *stateToAddTransition = searchAddState(root,currentState);
-        transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
-        addTransitionToTable(stateToAddTransition,red,newTransition);
+        if(red == written && currentState == nextState && headShift == 'S'){
+            state*followingState = searchAddState(root,nextState);
+            state *stateToAddTransition = searchAddState(root,currentState);
+            transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
+            addTransitionToTable(stateToAddTransition,red,newTransition);
+        }else{
+            state*followingState = searchAddState(root,nextState);
+            state *stateToAddTransition = searchAddState(root,currentState);
+            transition *newTransition = createNewTransition(written, headShift, followingState); //todo check if transition isn't already there
+            addTransitionToTable(stateToAddTransition,red,newTransition);
+        }
     }
 }
 

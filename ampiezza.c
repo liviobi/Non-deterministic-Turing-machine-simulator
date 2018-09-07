@@ -44,16 +44,10 @@ typedef  struct container_s{
     transition*transitionForChar;
 }container;
 
-typedef struct executionContainer_s{
-    execution*executionToDevelop;
-    transition*transitionsToApply;
-    struct executionContainer_s*nextContainer;
-}executionContainer;
-
 int maxIterations; //todo see for long or double
 node*root = NULL;
 execution*executions;
-executionContainer*executionsToRun = NULL;
+execution*executionsTail;
 int result = -1;
 
 void setMaxTransitions();
@@ -94,6 +88,8 @@ node *createNewNode(int stateIndex);
 
 state *createNewState() ;
 
+transition*createNewTransition(char written, char headShift, state*nextState, int infinite);
+
 void printStatesTree(node *nodeToPrint);
 
 void freeStatesTree(node *nodeToFree);
@@ -114,19 +110,7 @@ void fastInsertInTable(struct container_s **hashTable, int tableDim, container *
 
 void freeNodeTree(node *nodeToFree);
 
-void addNewExecutionContainer(execution *executionToDevelop, struct transition_s *transitionsToApply);
-
-void extractExecution();
-
-void freeAllExecutionContainers();
-
-void freeFirstExecutionContainer();
-
-transition*createNewTransition(char written, char headShift, state*nextState, int infinite);
-
-int infiniteLoopLeft(state *currentState);
-
-int infiniteLoopRight(state *currentState);
+int infiniteLoopLeft(state *currentState) ;
 
 //todo check for empty inputs
 int main() {
@@ -220,90 +204,41 @@ void executeAllTransition(char red) {
 
     if(transitionForRedChar == NULL){
         freeFirstExecution();
-        extractExecution();
         return;
     }
-    //if I have more than one transition
-    if(transitionForRedChar->nextTransition != NULL){
-        //todo posso farlo più veloce se controllo se ho solo due transizioni faccio due esecuzione senza fare il container
-        execution*clonedExecution = cloneExecution(executions);
-        addNewExecutionContainer(clonedExecution,transitionForRedChar->nextTransition);
-    }
-
-    transitionResult = makeTransition(executions,transitionForRedChar);
-    if(transitionResult == 0){
-        result = 0;
-        freeFirstExecution();
-        extractExecution();
-    }else if(transitionResult == 1){
-        result = 1;
-        freeAllExecutions();
-        freeAllExecutionContainers();
-        return;
-    }
-
-}
-
-void extractExecution() {
-    transition*transitionToApply;
-    if(executionsToRun == NULL){
-        return;
-    }
-    //only one transition left
-    while (executions == NULL){
-        if(executionsToRun->transitionsToApply->nextTransition == NULL){
-            executions = executionsToRun->executionToDevelop;
-            transitionToApply = executionsToRun->transitionsToApply;
-            //deleting container with no transitions in it
-            executionContainer*toDelete = executionsToRun;
-            executionsToRun = executionsToRun->nextContainer;
-            free(toDelete);
+    while(transitionForRedChar != NULL){
+        //whenever I have more than one transition I clone the fsm and execute it
+        if(transitionForRedChar->nextTransition != NULL){
+            execution*clonedExecution = cloneExecution(executions);
+            transitionResult = makeTransition(clonedExecution,transitionForRedChar);
+            if(transitionResult == 0){
+                result = 0;
+                freeExecution(clonedExecution);
+            }else if(transitionResult == 1){
+                result = 1;
+                freeAllExecutions();
+                return;
+            }else{
+                executionsTail->nextExecution = clonedExecution;
+                executionsTail = clonedExecution;
+            }
         }else{
-            executions = cloneExecution(executionsToRun->executionToDevelop);
-            transitionToApply = executionsToRun->transitionsToApply;
-            executionsToRun->transitionsToApply = executionsToRun->transitionsToApply->nextTransition;
+            //if I reach the last transition I don't clone it anymore I just update it
+            transitionResult = makeTransition(executions,transitionForRedChar);
+            if(transitionResult == 0){
+                result = 0;
+                execution*execToDelete = executions;
+                executions = executions->nextExecution;
+                freeExecution(execToDelete);
+            }else if(transitionResult == 1){
+                result = 1;
+                freeAllExecutions();
+                return;
+            }
         }
 
-        int transitionResult = makeTransition(executions,transitionToApply); //todo extract method
-        if(transitionResult == 0){
-            result = 0;
-            freeFirstExecution();
-        }else if(transitionResult == 1){
-            result = 1;
-            freeAllExecutions();
-            freeAllExecutionContainers();
-            return;
-        }
-        //if there are no more containers
-        if(executionsToRun == NULL){
-            return;
-        }
+        transitionForRedChar = transitionForRedChar->nextTransition;
     }
-
-}
-
-void freeAllExecutionContainers() {
-    while(executionsToRun != NULL){
-        freeFirstExecutionContainer();
-    }
-
-}
-
-void freeFirstExecutionContainer() {
-    if(executionsToRun != NULL){
-        executionContainer* toDelete = executionsToRun;
-        executionsToRun = toDelete->nextContainer;
-        freeExecution(toDelete->executionToDevelop);
-        free(toDelete);
-    }
-}
-
-void addNewExecutionContainer(execution *executionToDevelop, struct transition_s *transitionsToApply) {
-    executionContainer*newContainer = (executionContainer*)malloc(sizeof(executionContainer));
-    newContainer->executionToDevelop = executionToDevelop;
-    newContainer->transitionsToApply = transitionsToApply;
-    newContainer->nextContainer = executionsToRun;
-    executionsToRun = newContainer;
 }
 
 transition *getTransition(state *stateToSearch, char redChar) {
@@ -388,39 +323,15 @@ int makeTransition(execution*executionToUpdate,transition*transitionToApply) {
     }else if(transitionToApply->headShift == 'R'){
         executionToUpdate->cursor++;
         if(executionToUpdate->cursor==executionToUpdate->inputStringLen){
-                reallocInputStringRight(executionToUpdate);
+            reallocInputStringRight(executionToUpdate);
         }
     }
     return -1;
 }
 
-int infiniteLoopRight(state *currentState) {
-    transition*transitionToSearch = getTransition(currentState,'_');
-
-    while(transitionToSearch != NULL){
-        if(transitionToSearch->headShift == 'R'){
-            return 1;
-        }
-        transitionToSearch = transitionToSearch->nextTransition;
-    }
-    return 0;
-}
-
-int infiniteLoopLeft(state *currentState) {
-    transition*transitionToSearch = getTransition(currentState,'_');
-
-    while(transitionToSearch != NULL){
-        if(transitionToSearch->headShift == 'L'){
-            return 1;
-        }
-        transitionToSearch = transitionToSearch->nextTransition;
-    }
-    return 0;
-}
-
 execution *cloneExecution(execution *executionToClone) {
     execution*clonedExecution = createNewExecution(executionToClone->currentState, executionToClone->cursor,executionToClone->iteration, executionToClone->inputStringLen);
-    clonedExecution->nextExecution = executionToClone->nextExecution;
+    clonedExecution->nextExecution = NULL;
     for(int copiedCharIndex = 0; copiedCharIndex<executionToClone->inputStringLen;copiedCharIndex++){
         clonedExecution->inputString[copiedCharIndex] = executionToClone->inputString[copiedCharIndex];
     }
@@ -453,14 +364,13 @@ int createFirstExecution() {
     }
 
     executions = firstExec;
+    executionsTail = firstExec;
     return 1;
 }
 
 void reallocInputStringRight(execution *executionToModify) {
     char*oldInputString = executionToModify ->inputString;
-    //printf(" old = %d ",executionToModify->inputStringLen);
     int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
-    //printf("new = %d\n",newInputStringLen);
     executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
     for(int copiedCharIndex = 0;copiedCharIndex<executionToModify->inputStringLen;copiedCharIndex++){
         executionToModify->inputString[copiedCharIndex] = oldInputString[copiedCharIndex];
@@ -474,8 +384,8 @@ void reallocInputStringRight(execution *executionToModify) {
 
 void reallocInputStringLeft(execution *executionToModify) {
     char*oldInputString = executionToModify ->inputString;
-    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     int oldInputStringLen = executionToModify->inputStringLen;
+    int newInputStringLen = executionToModify->inputStringLen*REALLOC_INDEX;
     executionToModify->inputString = (char*)malloc((newInputStringLen)*sizeof(char));
 
     int blanksEnd = newInputStringLen - oldInputStringLen;
@@ -687,4 +597,16 @@ void setMaxTransitions() {//scan max
     //printf("%s\n", command);
     scanf("%d",&maxIterations);
     //printf("%d\n",maxIterations);
+}
+
+int infiniteLoopLeft(state *currentState) {
+    transition*transitionToSearch = getTransition(currentState,'_');
+
+    while(transitionToSearch != NULL){
+        if(transitionToSearch->headShift == 'L'){
+            return 1;
+        }
+        transitionToSearch = transitionToSearch->nextTransition;
+    }
+    return 0;
 }

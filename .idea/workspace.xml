@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/main.c" line="518" mnemonic="0" />
+  </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
       <config projectName="FSM" targetName="FSM" />
@@ -13,9 +16,10 @@
   <component name="ChangeListManager">
     <list default="true" id="6b102b95-c8f0-4ad9-8e3f-dc039254431f" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ampiezza.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fast.c" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/p" beforeDir="false" afterPath="$PROJECT_DIR$/p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resultFinder.c" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -40,8 +44,20 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="184">
-              <caret line="305" column="5" lean-forward="true" selection-start-line="305" selection-start-column="5" selection-end-line="305" selection-end-column="5" />
+            <state relative-caret-position="1642">
+              <caret line="685" column="5" selection-start-line="685" selection-start-column="5" selection-end-line="685" selection-end-column="5" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="a.c" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/a.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5869">
+              <caret line="354" selection-start-line="354" selection-end-line="355" />
             </state>
           </provider>
         </entry>
@@ -50,13 +66,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>firstexe</find>
-      <find>realloc</find>
-      <find>inputStringLen</find>
-      <find>createfirste</find>
-      <find>createfirst</find>
-      <find>h</find>
-      <find>rehash</find>
       <find>hash</find>
       <find>CRE</find>
       <find>reha</find>
@@ -80,6 +89,13 @@
       <find>createNewTransition</find>
       <find>maketra</find>
       <find>createnewTra</find>
+      <find>infiniteLoopLeft</find>
+      <find>searchAddState</find>
+      <find>states</find>
+      <find>clo</find>
+      <find>executeAllTransitionsBreadth</find>
+      <find>make</find>
+      <find>cr</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -91,6 +107,7 @@
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/Makefile" />
         <option value="$PROJECT_DIR$/ampiezza.c" />
+        <option value="$PROJECT_DIR$/a.c" />
         <option value="$PROJECT_DIR$/main.c" />
       </list>
     </option>
@@ -320,11 +337,18 @@
       <option name="project" value="LOCAL" />
       <updated>1536337324313</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="a version of ampiezza that passes evertything with 26">
+      <created>1536340581933</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1536340581933</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="234472000" />
+    <option name="totallyTimeSpent" value="237178000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1303" height="780" extended-state="6" />
@@ -390,7 +414,8 @@
     <MESSAGE value="inplemented hashtable with shared chars" />
     <MESSAGE value="updated ampiezza to transitions that stay in place" />
     <MESSAGE value="TOCORNOTTOCPASSED!!" />
-    <option name="LAST_COMMIT_MESSAGE" value="TOCORNOTTOCPASSED!!" />
+    <MESSAGE value="a version of ampiezza that passes evertything with 26" />
+    <option name="LAST_COMMIT_MESSAGE" value="a version of ampiezza that passes evertything with 26" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -398,13 +423,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="35" selection-start-line="5" selection-start-column="35" selection-end-line="5" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1083">
@@ -721,10 +739,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/a.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5869">
+          <caret line="354" selection-start-line="354" selection-end-line="355" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="305" column="5" lean-forward="true" selection-start-line="305" selection-start-column="5" selection-end-line="305" selection-end-column="5" />
+        <state relative-caret-position="1642">
+          <caret line="685" column="5" selection-start-line="685" selection-start-column="5" selection-end-line="685" selection-end-column="5" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
